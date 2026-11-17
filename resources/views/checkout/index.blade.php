@@ -1,346 +1,262 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 xl:gap-x-16">
-            {{-- Checkout Form --}}
-            <div class="lg:col-span-7 xl:col-span-8">
-                <div class="bg-white overflow-hidden shadow-lg rounded-xl">
-                    <div class="p-6 md:p-8 text-gray-900">
-                        {{-- Session Messages --}}<h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                            {{ __('Checkout') }}
-                        </h2>
+        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+            Secure Checkout
+        </h1>
     </x-slot>
 
-    @if (session('error'))
-        <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded">
-            {{ session('error') }}
-        </div>
-    @endif
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            {{-- Progress Bar --}}
-            <div class="mb-8">
-                <div class="max-w-3xl mx-auto">
-                    <div class="relative">
-                        <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200"></div>
-                        <div class="relative flex justify-between">
-                            <div class="step-item">
-                                <div
-                                    class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-medium relative z-10">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                    </svg>
-                                </div>
-                                <div class="mt-2 text-sm font-medium text-indigo-600">Cart</div>
-                            </div>
-                            <div class="step-item">
-                                <div
-                                    class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-medium relative z-10">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                                    </svg>
-                                </div>
-                                <div class="mt-2 text-sm font-medium text-indigo-600">Checkout</div>
-                            </div>
-                            <div class="step-item">
-                                <div
-                                    class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium relative z-10">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                                <div class="mt-2 text-sm font-medium text-gray-600">Confirmation</div>
-                            </div>
-                        </div>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        {{-- Stepper Progress Bar --}}
+        <div class="max-w-xl mx-auto mb-10">
+            <div class="flex items-center justify-between relative">
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-200 -z-0"></div>
+                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1/2 h-0.5 bg-gold-500 -z-0"></div>
+
+                <div class="flex flex-col items-center relative z-10">
+                    <div class="w-9 h-9 rounded-full bg-gold-500 text-white flex items-center justify-center font-bold text-xs shadow-md">
+                        ✓
                     </div>
+                    <span class="text-xs font-semibold text-gray-800 mt-2">Bag</span>
                 </div>
-            </div>
 
-            <div class="flex justify-center">
-                {{-- Checkout Form --}}
-                <div class="w-full">
-                    <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl">
-                        <div class="p-6 md:p-8 text-gray-900">
-                            {{-- Session Messages --}}
-                            @include('partials._flash_messages')
-
-                            {{-- Payment Form --}}
-                            <form id="payment-form" action="{{ route('checkout.process') }}" method="POST"
-                                class="space-y-8">
-                                @csrf
-
-                                {{-- Billing Information --}}
-                                <div>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-6">Billing Information</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div class="col-span-2 md:col-span-1">
-                                            <label for="card-name" class="block text-sm font-medium text-gray-700 mb-1">
-                                                Full Name
-                                            </label>
-                                            <input type="text" name="card-name" id="card-name" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                placeholder="John Doe">
-                                        </div>
-                                        <div class="col-span-2 md:col-span-1">
-                                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
-                                                Email Address
-                                            </label>
-                                            <input type="email" name="email" id="email" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                placeholder="john@example.com">
-                                        </div>
-                                        <div class="col-span-2">
-                                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
-                                                Billing Address
-                                            </label>
-                                            <input type="text" name="address" id="address" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                                placeholder="1234 Main St">
-                                        </div>
-                                        <div class="col-span-2 md:col-span-1">
-                                            <label for="city" class="block text-sm font-medium text-gray-700 mb-1">
-                                                City
-                                            </label>
-                                            <input type="text" name="city" id="city" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                        </div>
-                                        <div class="col-span-2 md:col-span-1">
-                                            <label for="postal-code"
-                                                class="block text-sm font-medium text-gray-700 mb-1">
-                                                ZIP / Postal Code
-                                            </label>
-                                            <input type="text" name="postal-code" id="postal-code" required
-                                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Payment Method --}}
-                                <div class="mt-10">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-6">Payment Method</h3>
-                                    <div class="mt-6 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                                        <div id="card-element" class="min-h-[40px]">
-                                            <!-- A Stripe Element will be inserted here. -->
-                                        </div>
-                                        <div id="card-errors" class="mt-2 text-sm text-red-600" role="alert"></div>
-                                    </div>
-                                </div>
-
-                                {{-- Payment Form --}}
-                                <div class="mt-8">
-                                    <h3 class="text-lg font-medium text-gray-900 mb-6">Payment Information</h3>
-
-                                    <form id="payment-form" action="{{ route('checkout.process') }}" method="POST"
-                                        class="space-y-6">
-                                        @csrf
-
-                                        {{-- Card Details --}}
-                                        <div class="space-y-6">
-                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                                <div class="col-span-2">
-                                                    <label for="card-name"
-                                                        class="block text-sm font-medium text-gray-700">Cardholder
-                                                        Name</label>
-                                                    <input type="text" name="card-name" id="card-name"
-                                                        value="{{ auth()->user()->name }}"
-                                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
-                                                        placeholder="Name on card">
-                                                </div>
-
-                                                <div class="col-span-2">
-                                                    <label for="card-element"
-                                                        class="block text-sm font-medium text-gray-700">Card
-                                                        Details</label>
-                                                    <div id="card-element"
-                                                        class="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
-                                                        <!-- Stripe Elements will be inserted here -->
-                                                    </div>
-                                                    <div id="card-errors" class="mt-2 text-sm text-red-600"
-                                                        role="alert"></div>
-                                                </div>
-
-                                                <div class="col-span-2">
-                                                    <label for="email"
-                                                        class="block text-sm font-medium text-gray-700">Email for
-                                                        Receipt</label>
-                                                    <input type="email" name="email" id="email"
-                                                        value="{{ auth()->user()->email }}"
-                                                        class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm bg-gray-50 cursor-not-allowed sm:text-sm"
-                                                        readonly>
-                                                </div>
-
-                                                <div class="col-span-2">
-                                                    <div class="relative flex items-start">
-                                                        <div class="flex items-center h-5">
-                                                            <input id="save_card" name="save_card" type="checkbox"
-                                                                class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                                                        </div>
-                                                        <div class="ml-3 text-sm">
-                                                            <label for="save_card"
-                                                                class="font-medium text-gray-700">Save card for future
-                                                                purchases</label>
-                                                            <p class="text-gray-500">Your payment information will be
-                                                                stored securely</p>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        Add City, Country, Postcode etc. if needed
-                                        Remember to add these fields to the Order model/migration and controller if you
-                                        collect them.
-                                        --}}
-
-                                        {{-- Stripe Card Element --}}
-                                        <div class="mb-4">
-                                            <label for="card-element" class="block text-sm font-medium text-gray-700">
-                                                Credit or debit card
-                                            </label>
-                                            <div id="card-element"
-                                                class="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm">
-                                                <!-- A Stripe Element will be inserted here. -->
-                                            </div>
-                                            <!-- Used to display form errors. -->
-                                            <div id="card-errors" role="alert" class="mt-2 text-sm text-red-600">
-                                            </div>
-                                        </div>
-
-                                        {{-- Hidden input to store the Payment Method ID --}}
-                                        <input type="hidden" name="payment_method" id="payment_method">
-
-                                        {{-- Submit Button --}}
-                                        <div class="mt-6">
-                                            <button id="submit-button" type="submit"
-                                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50">
-                                                <span id="button-text">Pay ${{ number_format($cartTotal, 2) }}</span>
-                                                <svg id="spinner"
-                                                    class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden"
-                                                    xmlns="http://www.w3.org/2000/svg" fill="none"
-                                                    viewBox="0 0 24 24">
-                                                    <circle class="opacity-25" cx="12" cy="12" r="10"
-                                                        stroke="currentColor" stroke-width="4"></circle>
-                                                    <path class="opacity-75" fill="currentColor"
-                                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                                    </path>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                        </div>
+                <div class="flex flex-col items-center relative z-10">
+                    <div class="w-9 h-9 rounded-full bg-[#1a1a2e] text-gold-400 border-2 border-gold-500 flex items-center justify-center font-bold text-xs shadow-md">
+                        2
                     </div>
+                    <span class="text-xs font-bold text-gold-600 mt-2">Payment</span>
+                </div>
+
+                <div class="flex flex-col items-center relative z-10">
+                    <div class="w-9 h-9 rounded-full bg-white text-gray-400 border border-gray-300 flex items-center justify-center font-bold text-xs">
+                        3
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 mt-2">Confirmation</span>
                 </div>
             </div>
         </div>
 
-        {{-- Include Stripe.js --}}
-        <script src="https://js.stripe.com/v3/"></script>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+            {{-- Left Column: Payment & Shipping Form (7 cols) --}}
+            <div class="lg:col-span-7 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-10">
+                <form id="payment-form" action="{{ route('checkout.process') }}" method="POST" class="space-y-8">
+                    @csrf
+                    <input type="hidden" name="payment_method" id="payment_method">
 
-        <script>
-            const stripeKey = "{{ $stripeKey }}"; // Get key from controller
-            const clientSecret = "{{ $intentClientSecret }}"; // Get intent secret from controller
-            const paymentForm = document.getElementById('payment-form');
-            const submitButton = document.getElementById('submit-button');
-            const buttonText = document.getElementById('button-text');
-            const spinner = document.getElementById('spinner');
-            const cardErrors = document.getElementById('card-errors');
-            const paymentMethodInput = document.getElementById('payment_method');
+                    {{-- Section 1: Customer Details --}}
+                    <div>
+                        <h2 class="font-serif text-xl font-bold text-gray-900 mb-5 flex items-center">
+                            <span class="w-7 h-7 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center text-xs font-bold mr-3">1</span>
+                            Customer & Delivery Information
+                        </h2>
 
-            const stripe = Stripe(stripeKey);
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="sm:col-span-2">
+                                <label for="card-holder-name" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Full Name</label>
+                                <input type="text" id="card-holder-name" name="name" value="{{ auth()->user()->name }}" required
+                                    class="w-full bg-[#faf9f7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500">
+                            </div>
 
-            // Style the Card Element (Optional)
-            const style = {
+                            <div class="sm:col-span-2">
+                                <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Email Receipt Address</label>
+                                <input type="email" id="email" value="{{ auth()->user()->email }}" readonly
+                                    class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-500 cursor-not-allowed">
+                            </div>
+
+                            <div class="sm:col-span-2">
+                                <label for="address" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Delivery Address</label>
+                                <input type="text" id="address" name="address" placeholder="124 Oxford Street, Flat 4B" required
+                                    class="w-full bg-[#faf9f7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500">
+                            </div>
+
+                            <div>
+                                <label for="city" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">City</label>
+                                <input type="text" id="city" name="city" placeholder="London" required
+                                    class="w-full bg-[#faf9f7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500">
+                            </div>
+
+                            <div>
+                                <label for="postal-code" class="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Postal Code</label>
+                                <input type="text" id="postal-code" name="postal_code" placeholder="W1D 1BS" required
+                                    class="w-full bg-[#faf9f7] border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Section 2: Payment Method (Stripe Elements) --}}
+                    <div class="pt-6 border-t border-gray-100">
+                        <h2 class="font-serif text-xl font-bold text-gray-900 mb-5 flex items-center">
+                            <span class="w-7 h-7 rounded-full bg-gold-100 text-gold-600 flex items-center justify-center text-xs font-bold mr-3">2</span>
+                            Payment Card Details
+                        </h2>
+
+                        <div class="bg-[#faf9f7] rounded-2xl p-5 border border-gray-200">
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-2.5">Credit or Debit Card</label>
+                            <div id="card-element" class="bg-white p-3.5 rounded-xl border border-gray-200 focus-within:border-gold-500">
+                                <!-- Stripe Elements Mount -->
+                            </div>
+                            <div id="card-errors" class="mt-2.5 text-xs text-rose-600 font-medium" role="alert"></div>
+                        </div>
+
+                        <div class="mt-4 flex items-center space-x-2 text-xs text-gray-500">
+                            <svg class="w-4 h-4 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            <span>Encrypted card processing via Stripe. Card details never touch our server.</span>
+                        </div>
+                    </div>
+
+                    {{-- Submit CTA --}}
+                    <button id="submit-button" type="submit"
+                        class="w-full py-4 px-8 rounded-2xl text-base font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 hover:from-gold-300 hover:to-gold-400 shadow-xl transition-all duration-200 flex items-center justify-center space-x-2 active:scale-98 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="button-text">Confirm & Pay ${{ number_format($cartTotal, 2) }}</span>
+                        <svg id="spinner" class="animate-spin ml-2 h-5 w-5 text-[#1a1a2e] hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+
+            {{-- Right Column: Order Summary (5 cols) --}}
+            <div class="lg:col-span-5 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">
+                <h2 class="font-serif text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">
+                    Items In Your Order ({{ $cartItems->count() }})
+                </h2>
+
+                <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto pr-1">
+                    @foreach ($cartItems as $item)
+                        <div class="py-3 flex items-center space-x-4">
+                            <div class="w-12 h-16 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100">
+                                <img src="{{ asset($item->attributes->image ?: 'images/covers/default.png') }}"
+                                    alt="{{ $item->name }}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-sm font-semibold text-gray-900 truncate">{{ $item->name }}</h3>
+                                <p class="text-xs text-gray-400">Qty: {{ $item->quantity }} × ${{ number_format($item->price, 2) }}</p>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900 font-serif">
+                                ${{ number_format($item->getPriceSum(), 2) }}
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Price Breakdown --}}
+                <div class="border-t border-gray-100 pt-4 space-y-3 text-sm">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span class="font-medium text-gray-900">${{ number_format($cartSubtotal, 2) }}</span>
+                    </div>
+
+                    @if ($discount > 0)
+                        <div class="flex justify-between text-emerald-600 font-medium">
+                            <span>Coupon Discount ({{ $appliedCouponCode }})</span>
+                            <span>-${{ number_format($discount, 2) }}</span>
+                        </div>
+                    @endif
+
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tracked Shipping</span>
+                        <span class="text-emerald-600 font-medium">Complimentary</span>
+                    </div>
+
+                    <div class="border-t border-gray-100 pt-3 flex justify-between items-baseline">
+                        <span class="font-serif text-lg font-bold text-gray-900">Total Due</span>
+                        <span class="font-serif text-3xl font-bold text-gray-900">
+                            ${{ number_format($cartTotal, 2) }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-[#faf9f7] border border-gray-100 text-xs text-gray-500 space-y-2">
+                    <div class="font-bold text-gray-800 uppercase tracking-wider">Cancellation & Returns</div>
+                    <p>Free cancellation before dispatch. 30-day money-back return policy on all physical books.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Stripe.js Setup --}}
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        const stripe = Stripe("{{ $stripeKey }}");
+        const clientSecret = "{{ $intentClientSecret }}";
+
+        const elements = stripe.elements();
+        const cardElement = elements.create('card', {
+            style: {
                 base: {
-                    color: '#32325d',
-                    fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+                    color: '#1a1a2e',
+                    fontFamily: 'Inter, system-ui, sans-serif',
                     fontSmoothing: 'antialiased',
-                    fontSize: '16px',
-                    '::placeholder': {
-                        color: '#aab7c4'
-                    }
+                    fontSize: '15px',
+                    '::placeholder': { color: '#9ca3af' }
                 },
                 invalid: {
-                    color: '#fa755a',
-                    iconColor: '#fa755a'
-                }
-            };
-
-            // Create an instance of the card Element.
-            const elements = stripe.elements();
-            const cardElement = elements.create('card', {
-                style: style,
-                hidePostalCode: true
-            }); // hidePostalCode is optional
-
-            // Add an instance of the card Element into the `card-element` <div>.
-            cardElement.mount('#card-element');
-
-            // Handle real-time validation errors from the card Element.
-            cardElement.on('change', function(event) {
-                if (event.error) {
-                    cardErrors.textContent = event.error.message;
-                } else {
-                    cardErrors.textContent = '';
-                }
-                // Optionally enable/disable submit button based on completeness
-                submitButton.disabled = event.empty || !event.complete;
-            });
-
-            // Handle form submission.
-            paymentForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
-                setLoading(true);
-
-                // Create PaymentMethod using the Card Element and the SetupIntent's client secret
-                const {
-                    setupIntent,
-                    error
-                } = await stripe.confirmCardSetup(
-                    clientSecret, {
-                        payment_method: {
-                            card: cardElement,
-                            // billing_details: { name: document.getElementById('name').value } // Add billing details if needed
-                        }
-                    }
-                );
-
-                if (error) {
-                    // Inform the user if there was an error.
-                    cardErrors.textContent = error.message;
-                    console.error("Stripe Error:", error);
-                    setLoading(false);
-                } else {
-                    // Check SetupIntent status
-                    if (setupIntent.status === 'succeeded') {
-                        // Card setup succeeded. The PaymentMethod ID is setupIntent.payment_method
-                        console.log("SetupIntent Succeeded. PaymentMethod ID:", setupIntent.payment_method);
-                        cardErrors.textContent = '';
-                        // Add the payment method ID to the form and submit
-                        paymentMethodInput.value = setupIntent.payment_method;
-                        paymentForm.submit(); // Submit the form to your backend (/checkout route)
-                    } else {
-                        cardErrors.textContent = 'Card setup failed. Status: ' + setupIntent.status;
-                        console.error("SetupIntent Status:", setupIntent.status);
-                        setLoading(false);
-                    }
-                }
-            });
-
-            // Helper function to show/hide loading state
-            function setLoading(isLoading) {
-                if (isLoading) {
-                    // Disable button and show spinner
-                    submitButton.disabled = true;
-                    spinner.classList.remove('hidden');
-                    buttonText.classList.add('hidden');
-                } else {
-                    // Enable button and hide spinner
-                    submitButton.disabled = false;
-                    spinner.classList.add('hidden');
-                    buttonText.classList.remove('hidden');
+                    color: '#e11d48',
+                    iconColor: '#e11d48'
                 }
             }
-        </script>
+        });
+
+        cardElement.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        const submitButton = document.getElementById('submit-button');
+        const buttonText = document.getElementById('button-text');
+        const spinner = document.getElementById('spinner');
+        const cardErrors = document.getElementById('card-errors');
+        const paymentMethodInput = document.getElementById('payment_method');
+
+        cardElement.on('change', function(event) {
+            if (event.error) {
+                cardErrors.textContent = event.error.message;
+            } else {
+                cardErrors.textContent = '';
+            }
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            setLoading(true);
+
+            const cardHolderName = document.getElementById('card-holder-name').value;
+
+            const { setupIntent, error } = await stripe.confirmCardSetup(
+                clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: cardHolderName
+                        }
+                    }
+                }
+            );
+
+            if (error) {
+                cardErrors.textContent = error.message;
+                setLoading(false);
+            } else {
+                if (setupIntent.status === 'succeeded') {
+                    paymentMethodInput.value = setupIntent.payment_method;
+                    form.submit();
+                } else {
+                    cardErrors.textContent = 'Setup did not succeed. Status: ' + setupIntent.status;
+                    setLoading(false);
+                }
+            }
+        });
+
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                spinner.classList.remove('hidden');
+                buttonText.textContent = 'Processing Payment...';
+            } else {
+                submitButton.disabled = false;
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Confirm & Pay ${{ number_format($cartTotal, 2) }}';
+            }
+        }
+    </script>
 </x-app-layout>

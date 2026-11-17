@@ -1,24 +1,17 @@
 <x-admin-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Edit Book: ') }} {{ $book->title }}
-        </h2>
+        <div>
+            <span class="text-xs uppercase tracking-wider text-gold-600 font-bold block mb-1">Catalog</span>
+            <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Edit: {{ $book->title }}</h1>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 md:p-8 text-gray-900">
-                    {{-- Display validation errors if any --}}
-                    {{-- @if ($errors->any()) ... @endif --}}
-
-                    <form method="POST" action="{{ route('admin.books.update', $book->id) }}"
-                        enctype="multipart/form-data"> {{-- Use book ID for update route --}}
-                        @method('PUT') {{-- Method spoofing for PUT request --}}
-                        @include('admin.books._form', ['book' => $book]) {{-- Include partial, passing the $book variable --}}
-                    </form>
-                </div>
-            </div>
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-gray-100">
+            <form method="POST" action="{{ route('admin.books.update', $book->id) }}" enctype="multipart/form-data">
+                @method('PUT')
+                @include('admin.books._form')
+            </form>
         </div>
     </div>
 </x-admin-layout>

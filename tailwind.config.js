@@ -11,8 +11,22 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                navy: {
+                    800: "#1e2038",
+                    900: "#1a1a2e",
+                    950: "#121220",
+                },
+                gold: {
+                    400: "#d4b86a",
+                    500: "#c9a84c",
+                    600: "#b08d36",
+                },
+                surface: "#faf9f7",
+            },
             fontFamily: {
-                sans: ["Figtree", ...defaultTheme.fontFamily.sans],
+                sans: ["Inter", ...defaultTheme.fontFamily.sans],
+                serif: ["Playfair Display", ...defaultTheme.fontFamily.serif],
             },
         },
     },

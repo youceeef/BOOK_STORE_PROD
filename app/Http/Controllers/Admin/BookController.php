@@ -49,6 +49,7 @@ class BookController extends Controller
         ]);
 
         $data = $request->except('cover_image'); // Get all data except the image for now
+        $data['description'] = strip_tags($request->description);
         $data['slug'] = Str::slug($request->title) . '-' . Str::random(5); // Create a unique slug
 
         // Handle File Upload
@@ -110,6 +111,9 @@ class BookController extends Controller
         ]);
 
         $data = $request->except('cover_image', '_token', '_method'); // Exclude image and form tokens/methods
+        if ($request->has('description')) {
+            $data['description'] = strip_tags($request->description);
+        }
 
         // Only update slug if title changed
         if ($request->title !== $book->title) {

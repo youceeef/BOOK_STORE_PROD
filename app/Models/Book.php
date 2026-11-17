@@ -27,10 +27,12 @@ class Book extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    // public function getRouteKeyName(): string
-    // {
-    //     return 'slug';
-    // }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);

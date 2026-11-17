@@ -1,95 +1,86 @@
 <x-admin-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Manage Categories') }}
-            </h2>
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <span class="text-xs uppercase tracking-wider text-gold-600 font-bold block mb-1">Taxonomy</span>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Manage Categories</h1>
+            </div>
             <a href="{{ route('admin.categories.create') }}"
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Add New Category
+                class="inline-flex items-center px-5 py-2.5 rounded-xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 shadow-md transition">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Add Category
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8"> {{-- Adjusted max-width --}}
-            {{-- Flash Messages --}}
-            @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded">
-                    {{ session('error') }}
-                </div>
-            @endif
+    <div class="max-w-5xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-100">
+                    <thead class="bg-[#faf9f7]">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">URL Slug</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Visibility</th>
+                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Volumes</th>
+                            <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @forelse ($categories as $category)
+                            <tr class="hover:bg-[#faf9f7]/60 transition">
+                                <td class="px-6 py-4 whitespace-nowrap font-serif font-bold text-sm text-gray-900">
+                                    {{ $category->name }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap font-mono text-xs text-gray-500">
+                                    /categories/{{ $category->slug }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if ($category->active)
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                            Active
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-500 border border-gray-200">
+                                            Hidden
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600 font-medium">
+                                    {{ $category->books_count ?? $category->books()->count() }} {{ Str::plural('title', $category->books()->count()) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-xs space-x-2">
+                                    <a href="{{ route('admin.categories.edit', $category->id) }}"
+                                        class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition">
+                                        Edit
+                                    </a>
+                                    <form action="{{ route('admin.categories.destroy', $category->id) }}" method="POST" class="inline-block"
+                                        onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-transparent transition {{ $category->books()->count() > 0 ? 'opacity-40 cursor-not-allowed' : '' }}"
+                                            {{ $category->books()->count() > 0 ? 'disabled title="Cannot delete category containing books"' : '' }}>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-400">
+                                    No categories cataloged yet.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Name</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Slug</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Active</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Book Count</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($categories as $category)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $category->name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $category->slug }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $category->active ? 'Yes' : 'No' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $category->books()->count() }}</td> {{-- Display book count --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <a href="{{ route('admin.categories.edit', $category->id) }}"
-                                                class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
-                                            <form action="{{ route('admin.categories.destroy', $category->id) }}"
-                                                method="POST" class="inline-block"
-                                                onsubmit="return confirm('Are you sure you want to delete this category?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="text-red-600 hover:text-red-900 {{ $category->books()->count() > 0 ? 'opacity-50 cursor-not-allowed' : '' }}"
-                                                    {{ $category->books()->count() > 0 ? 'disabled title="Cannot delete category with books"' : '' }}>
-                                                    Delete
-                                                </button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4"
-                                            class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No categories
-                                            found.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-                    {{-- Pagination --}}
-                    <div class="mt-4">
-                        {{ $categories->links() }}
-                    </div>
-                </div>
+            <div class="p-6 border-t border-gray-100">
+                {{ $categories->links() }}
             </div>
         </div>
     </div>

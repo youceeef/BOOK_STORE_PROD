@@ -51,7 +51,9 @@ Route::prefix('cart')->name('cart.')->group(function () {
 
 });
 
-Route::post('/coupon', [CouponController::class, 'store'])->name('coupon.store');
+Route::post('/coupon', [CouponController::class, 'store'])
+    ->middleware('throttle:15,1')
+    ->name('coupon.store');
 Route::delete('/coupon', [CouponController::class, 'destroy'])->name('coupon.destroy');
 // --- Authenticated User Routes ---
 
@@ -69,7 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () { // 'verified' is op
 
     // Checkout Process
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'process'])->name('checkout.process');
+    Route::post('/checkout', [CheckoutController::class, 'process'])
+        ->middleware('throttle:15,1')
+        ->name('checkout.process');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel'); // Optional cancel page
 

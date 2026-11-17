@@ -1,25 +1,34 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+    <div class="mb-8">
+        <h1 class="font-serif text-3xl font-bold text-gray-900 tracking-tight">Reset Password</h1>
+        <p class="text-sm text-gray-500 mt-2">
+            Enter your registered email address and we'll dispatch a secure recovery link.
+        </p>
     </div>
 
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-5">
         @csrf
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
+            <x-input-label for="email" :value="__('Email Address')" class="text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5" />
+            <x-text-input id="email" class="block w-full" type="email" name="email" :value="old('email')" required autofocus placeholder="reader@example.com" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
+        <div>
+            <x-primary-button class="w-full">
+                {{ __('Send Reset Instructions') }}
             </x-primary-button>
+        </div>
+
+        <div class="text-center pt-4 border-t border-gray-200">
+            <a href="{{ route('login') }}" class="text-xs font-semibold text-gray-600 hover:text-gray-900">
+                ← Back to Sign In
+            </a>
         </div>
     </form>
 </x-guest-layout>

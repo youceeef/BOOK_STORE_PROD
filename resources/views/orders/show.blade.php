@@ -1,131 +1,111 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                {{ __('Order Details') }} #{{ $order->id }}
-            </h2>
-            <a href="{{ route('orders.index') }}"
-                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded text-sm">
-                ← Back to My Orders
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <span class="text-xs uppercase font-semibold tracking-wider text-gold-600 block mb-0.5">Order Invoice</span>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+                    Order #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                </h1>
+            </div>
+            <a href="{{ route('orders.index') }}" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition">
+                ← Back to Order History
             </a>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 border-b">
-                    <h3 class="text-lg font-semibold mb-4">Order Summary</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                        <div>
-                            <p><strong>Order ID:</strong> #{{ $order->id }}</p>
-                            <p><strong>Order Date:</strong> {{ $order->created_at->format('F j, Y, g:i a') }}</p>
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            
+            {{-- Header Overview Strip --}}
+            <div class="p-6 sm:p-8 bg-[#faf9f7] border-b border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                <div>
+                    <span class="text-gray-400 block mb-1">Order Date</span>
+                    <span class="font-semibold text-gray-900">{{ $order->created_at->format('M d, Y h:i A') }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 block mb-1">Payment Status</span>
+                    @php
+                        $statusClasses = match($order->status) {
+                            'paid', 'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                            'shipped'           => 'bg-blue-50 text-blue-700 border-blue-200',
+                            'pending'           => 'bg-amber-50 text-amber-700 border-amber-200',
+                            'failed'            => 'bg-rose-50 text-rose-700 border-rose-200',
+                            default             => 'bg-gray-50 text-gray-700 border-gray-200',
+                        };
+                    @endphp
+                    <span class="inline-block px-2 py-0.5 rounded-full font-semibold border {{ $statusClasses }}">
+                        {{ ucfirst($order->status) }}
+                    </span>
+                </div>
+                <div>
+                    <span class="text-gray-400 block mb-1">Total Paid</span>
+                    <span class="font-serif text-base font-bold text-gray-900">${{ number_format($order->total_amount, 2) }}</span>
+                </div>
+                <div>
+                    <span class="text-gray-400 block mb-1">Transaction Ref</span>
+                    <span class="font-mono text-[11px] text-gray-600 truncate block" title="{{ $order->stripe_payment_intent_id }}">
+                        {{ $order->stripe_payment_intent_id ? Str::limit($order->stripe_payment_intent_id, 12) : 'Offline/N/A' }}
+                    </span>
+                </div>
+            </div>
+
+            {{-- Items List --}}
+            <div class="p-6 sm:p-8 divide-y divide-gray-100">
+                <h2 class="font-serif text-lg font-bold text-gray-900 pb-4">Volumes Purchased</h2>
+
+                @foreach ($order->items as $item)
+                    <div class="py-4 flex items-center justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-14 h-20 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-sm">
+                                <img src="{{ asset($item->book?->cover_image ?: 'images/covers/default.png') }}"
+                                    alt="{{ $item->book?->title ?? 'Book' }}"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <h3 class="font-serif font-bold text-sm sm:text-base text-gray-900">
+                                    {{ $item->book?->title ?? 'Title no longer listed' }}
+                                </h3>
+                                <p class="text-xs text-gray-500 mt-0.5">by {{ $item->book?->author ?? 'Unknown' }}</p>
+                                <p class="text-xs text-gray-400 mt-1">Quantity: {{ $item->quantity }} × ${{ number_format($item->price, 2) }}</p>
+                            </div>
                         </div>
-                        <div>
-                            <p><strong>Total Amount:</strong> <span
-                                    class="font-semibold">${{ number_format($order->total_amount, 2) }}</span></p>
-                            <p><strong>Status:</strong>
-                                <span
-                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                    @switch($order->status)
-                                        @case('pending') bg-yellow-100 text-yellow-800 @break
-                                        @case('paid')
-                                        @case('processing') bg-blue-100 text-blue-800 @break
-                                        @case('shipped') bg-green-100 text-green-800 @break
-                                        @case('completed') bg-green-100 text-green-800 @break
-                                        @case('failed') bg-red-100 text-red-800 @break
-                                        @default bg-gray-100 text-gray-800
-                                    @endswitch
-                                ">
-                                    {{ ucfirst($order->status) }}
-                                </span>
-                            </p>
+
+                        <span class="font-serif font-bold text-base text-gray-900">
+                            ${{ number_format($item->price * $item->quantity, 2) }}
+                        </span>
+                    </div>
+                @endforeach
+            </div>
+
+            {{-- Final Accounting Footer --}}
+            <div class="p-6 sm:p-8 bg-[#faf9f7] border-t border-gray-100">
+                <div class="max-w-xs ml-auto space-y-2 text-sm">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Items Subtotal</span>
+                        <span class="font-medium text-gray-900">${{ number_format($order->total_amount + ($order->discount_amount ?? 0), 2) }}</span>
+                    </div>
+
+                    @if ($order->discount_amount > 0)
+                        <div class="flex justify-between text-emerald-600 font-medium">
+                            <span>Discount ({{ $order->coupon_code }})</span>
+                            <span>-${{ number_format($order->discount_amount, 2) }}</span>
                         </div>
-                        <div>
-                            {{-- Optional: Billing/Shipping Address display if collected --}}
-                            {{-- <p><strong>Billing Address:</strong> {{ $order->billing_address ?: 'N/A' }}</p> --}}
-                            {{-- <p><strong>Shipping Address:</strong> {{ $order->shipping_address ?: 'N/A' }}</p> --}}
-                            <p><strong>Stripe Ref:</strong> <code
-                                    class="text-xs">{{ $order->stripe_payment_intent_id ?: 'N/A' }}</code></p>
-                        </div>
+                    @endif
+
+                    <div class="flex justify-between text-gray-600">
+                        <span>Tracked Shipping</span>
+                        <span class="text-emerald-600 font-medium">Free</span>
+                    </div>
+
+                    <div class="border-t border-gray-200 pt-3 flex justify-between items-baseline">
+                        <span class="font-serif text-base font-bold text-gray-900">Final Total</span>
+                        <span class="font-serif text-2xl font-bold text-gray-900">
+                            ${{ number_format($order->total_amount, 2) }}
+                        </span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-lg font-semibold mb-4">Items Ordered</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Item</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Price</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Quantity</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($order->items as $item)
-                                    {{-- Loop through eager loaded items --}}
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="flex items-center">
-                                                <div class="flex-shrink-0 h-16 w-12 mr-4">
-                                                    {{-- Use book relationship loaded within the item --}}
-                                                    <img class="h-16 w-auto object-contain rounded"
-                                                        src="{{ $item->book?->cover_image ?: asset('images/covers/default.png') }}"
-                                                        alt="{{ $item->book?->title }}">
-                                                </div>
-                                                <div>
-                                                    <div class="text-sm font-medium text-gray-900">
-                                                        <a href="{{ $item->book ? route('books.show', $item->book->slug) : '#' }}"
-                                                            class="hover:text-blue-600">
-                                                            {{ $item->book?->title ?? 'Book not found' }}
-                                                        </a>
-                                                    </div>
-                                                    <div class="text-xs text-gray-500">
-                                                        {{ $item->book?->author ?? '' }}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            ${{ number_format($item->price, 2) }}</td> {{-- Price at time of purchase --}}
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $item->quantity }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            ${{ number_format($item->price * $item->quantity, 2) }}</td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4"
-                                            class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No items found
-                                            for this order.</td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="3"
-                                        class="px-6 py-3 text-right text-sm font-medium text-gray-500 uppercase">Total
-                                    </td>
-                                    <td class="px-6 py-3 text-left text-sm font-medium text-gray-900">
-                                        ${{ number_format($order->total_amount, 2) }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </x-app-layout>

@@ -1,307 +1,292 @@
-{{-- resources/views/cart/index.blade.php --}}
 <x-app-layout>
-    {{-- Header --}}
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Cart
-        </h2>
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+                    Your Shopping Bag
+                </h1>
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ Cart::getContent()->count() }} {{ Str::plural('distinct title', Cart::getContent()->count()) }} selected
+                </p>
+            </div>
+            <a href="{{ route('books.index') }}" class="text-xs sm:text-sm font-semibold text-gold-600 hover:text-gold-700 transition flex items-center gap-1">
+                <span>←</span>
+                <span>Continue Browsing</span>
+            </a>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    {{-- Session Messages --}}
-                    @include('partials._flash_messages')
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        @if ($cartItems->isEmpty())
+            {{-- Empty Cart State --}}
+            <div class="max-w-xl mx-auto text-center py-20 px-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <div class="w-20 h-20 mx-auto mb-5 rounded-full bg-gold-50 text-gold-500 flex items-center justify-center">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                </div>
+                <h2 class="font-serif text-2xl font-bold text-gray-900 mb-2">Your Bag is Empty</h2>
+                <p class="text-sm text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+                    It looks like you haven't selected any volumes yet. Discover timeless reads in our curated catalog.
+                </p>
+                <a href="{{ route('books.index') }}"
+                    class="inline-flex items-center px-7 py-3.5 rounded-2xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 shadow-lg transition">
+                    Explore The Library
+                </a>
+            </div>
+        @else
+            @php
+                $subtotal = Cart::getSubTotal(false);
+                $shippingThreshold = 35.00;
+                $freeShippingProgress = min(100, round(($subtotal / $shippingThreshold) * 100));
+                $amountNeeded = max(0, $shippingThreshold - $subtotal);
 
-                    @if ($cartItems->isEmpty())
-                        {{-- Empty cart message --}}
-                        <div class="text-center py-12">
-                            <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                            <h3 class="mt-4 text-lg font-medium text-gray-900">Your cart is empty</h3>
-                            <p class="mt-2 text-gray-500">Looks like you haven't added anything to your cart yet.</p>
-                            <a href="{{ route('books.index') }}"
-                                class="mt-6 inline-block bg-indigo-600 px-6 py-3 rounded-md text-white font-medium hover:bg-indigo-700 transition duration-150">
-                                Browse Books
-                            </a>
-                        </div>
-                    @else
-                        {{-- Cart Items Table --}}
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-                                    <tr>
-                                        <th scope="col"
-                                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            Product </th>
-                                        <th scope="col"
-                                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            Price </th>
-                                        <th scope="col"
-                                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            Quantity </th>
-                                        <th scope="col"
-                                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            Total </th>
-                                        <th scope="col"
-                                            class="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                            Actions </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach ($cartItems as $item)
-                                        <tr class="hover:bg-gray-50 transition duration-150">
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center space-x-4">
-                                                    <div
-                                                        class="flex-shrink-0 h-20 w-16 overflow-hidden rounded-lg shadow-sm">
-                                                        <img class="h-20 w-16 object-cover transform hover:scale-105 transition duration-200"
-                                                            src="{{ asset($item->attributes->image) }}"
-                                                            alt="{{ $item->name }}">
-                                                    </div>
-                                                    <div class="flex-1 min-w-0">
-                                                        <a href="{{ route('books.show', $item->attributes->slug) }}"
-                                                            class="text-base font-medium text-gray-900 hover:text-indigo-600 truncate block">
-                                                            {{ $item->name }}
-                                                        </a>
-                                                        <p class="text-sm text-gray-500 mt-1">
-                                                            {{ Str::limit($item->attributes->description ?? '', 50) }}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="text-base font-medium text-gray-900">
-                                                    ${{ number_format($item->price, 2) }}
-                                                </div>
-                                                <div class="text-sm text-gray-500 mt-1">per unit</div>
-                                            </td>
-                                            <td class="px-6 py-4"> {{-- Update Quantity Form --}}
-                                                <form action="{{ route('cart.update', $item->id) }}" method="POST"
-                                                    class="flex items-center space-x-3" x-data="{ quantity: {{ $item->quantity }} }">
-                                                    @csrf @method('PATCH')
-                                                    <div class="flex items-center border border-gray-300 rounded-lg">
-                                                        <button type="button" @click="if(quantity > 1) quantity--"
-                                                            class="p-2 hover:bg-gray-100 rounded-l-lg">
-                                                            <svg class="w-4 h-4 text-gray-600" fill="none"
-                                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M20 12H4" />
-                                                            </svg>
-                                                        </button>
-                                                        <input type="number" name="quantity" x-model="quantity"
-                                                            min="1" max="{{ $item->attributes->stock ?? 99 }}"
-                                                            class="w-16 border-0 text-center focus:ring-0 text-base"
-                                                            @change="quantity = Math.max(1, Math.min(quantity, {{ $item->attributes->stock ?? 99 }}))">
-                                                        <button type="button" @click="quantity++"
-                                                            class="p-2 hover:bg-gray-100 rounded-r-lg">
-                                                            <svg class="w-4 h-4 text-gray-600" fill="none"
-                                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round"
-                                                                    stroke-width="2" d="M12 6v12M6 12h12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                    <button type="submit"
-                                                        class="p-2 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-full transition duration-150"
-                                                        title="Update Quantity">
-                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                                @if ($item->attributes->stock && $item->quantity > $item->attributes->stock)
-                                                    <p class="text-red-500 text-xs mt-1">Only
-                                                        {{ $item->attributes->stock }} available</p>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <div class="text-base font-semibold text-gray-900">
-                                                    ${{ number_format($item->getPriceSum(), 2) }}
-                                                </div>
-                                                @if ($item->quantity > 1)
-                                                    <div class="text-sm text-gray-500 mt-1">
-                                                        (${{ number_format($item->price, 2) }} ×
-                                                        {{ $item->quantity }})
-                                                    </div>
-                                                @endif
-                                            </td>
-                                            <td class="px-6 py-4 text-right">
-                                                {{-- Remove Item Form --}}
-                                                <form action="{{ route('cart.destroy', $item->id) }}" method="POST"
-                                                    class="inline-flex" x-data="{ showConfirm: false }"
-                                                    @submit.prevent="if(showConfirm || confirm('Are you sure you want to remove this item?')) $el.submit()">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit"
-                                                        class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition duration-150"
-                                                        title="Remove Item">
-                                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                            stroke="currentColor">
-                                                            <path stroke-linecap="round" stroke-linejoin="round"
-                                                                stroke-width="2"
-                                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                $discount = 0;
+                $couponCode = null;
+                if (session()->has('coupon')) {
+                    $couponData = session('coupon');
+                    $couponModel = \App\Models\Coupon::where('code', $couponData['code'])->first();
+                    if ($couponModel && $couponModel->isValid() && (!$couponModel->min_amount || $subtotal >= $couponModel->min_amount)) {
+                        $discount = $couponModel->calculateDiscount($subtotal);
+                        $couponCode = $couponModel->code;
+                    } else {
+                        session()->forget('coupon');
+                    }
+                }
+                $finalTotal = max(0, $subtotal - $discount);
+            @endphp
 
-                        {{-- Coupon & Summary Area --}}
-                        <div class="mt-8 md:grid md:grid-cols-3 md:gap-8">
-                            {{-- Coupon Form --}}
-                            <div class="md:col-span-1">
-                                <div class="bg-gray-50 rounded-lg p-6 shadow-sm">
-                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Have a Coupon?</h3>
-                                    @if (!session()->has('coupon'))
-                                        <form action="{{ route('coupon.store') }}" method="POST">
-                                            @csrf
-                                            <div class="flex flex-col space-y-3">
-                                                <input type="text" name="coupon_code"
-                                                    placeholder="Enter your coupon code" required
-                                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm placeholder-gray-400">
-                                                <button type="submit"
-                                                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition duration-150 text-sm flex items-center justify-center space-x-2">
-                                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                                                    </svg>
-                                                    <span>Apply Coupon</span>
-                                                </button>
-                                            </div>
-                                            @error('coupon_code')
-                                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
-                                        </form>
-                                    @else
-                                        {{-- Display applied coupon & remove button --}}
-                                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                            <div class="flex items-start">
-                                                <div class="flex-shrink-0">
-                                                    <svg class="h-5 w-5 text-green-600" fill="none"
-                                                        viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                </div>
-                                                <div class="ml-3 w-full">
-                                                    <p class="text-sm font-medium text-green-800">
-                                                        Coupon Applied: {{ session('coupon')['code'] }}
-                                                    </p>
-                                                    <form action="{{ route('coupon.destroy') }}" method="POST"
-                                                        class="mt-2"
-                                                        onsubmit="return confirm('Are you sure you want to remove this coupon?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit"
-                                                            class="text-sm text-red-600 hover:text-red-800 font-medium">
-                                                            Remove Coupon
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endif
-                                </div>
+            {{-- Free Shipping Tracker Banner --}}
+            <div class="mb-8 bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div class="flex items-center justify-between text-xs sm:text-sm font-medium mb-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🚚</span>
+                        @if ($subtotal >= $shippingThreshold)
+                            <span class="text-emerald-700 font-bold">You've unlocked FREE Tracked Delivery!</span>
+                        @else
+                            <span class="text-gray-700">Add <span class="font-bold text-gray-900">${{ number_format($amountNeeded, 2) }}</span> more to unlock <span class="font-bold text-gold-600">Free Tracked Delivery</span></span>
+                        @endif
+                    </div>
+                    <span class="text-xs text-gray-500 font-semibold">{{ $freeShippingProgress }}%</span>
+                </div>
+                <div class="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                    <div class="bg-gradient-to-r from-gold-400 to-gold-500 h-2.5 rounded-full transition-all duration-500"
+                        style="width: {{ $freeShippingProgress }}%"></div>
+                </div>
+            </div>
 
-                                {{-- Spacer --}}
-                                <div class="hidden md:block"></div>
-
-                                {{-- Cart Summary --}}
-                                <div class="md:col-span-1 md:ml-auto">
-                                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Order Summary</h3>
-                                        @php
-                                            $subtotal = Cart::getSubTotal(false);
-                                            $discount = 0;
-                                            $couponCode = null;
-                                            if (session()->has('coupon')) {
-                                                $coupon = session('coupon');
-                                                $couponModel = \App\Models\Coupon::where(
-                                                    'code',
-                                                    $coupon['code'],
-                                                )->first();
-                                                if ($couponModel) {
-                                                    $discount = $couponModel->calculateDiscount($subtotal);
-                                                    $couponCode = $coupon['code'];
-                                                } else {
-                                                    session()->forget('coupon');
-                                                }
-                                            }
-                                            $newTotal = max(0, $subtotal - $discount);
-                                        @endphp
-
-                                        <div class="space-y-4">
-                                            <div class="flex justify-between text-base text-gray-600">
-                                                <span>Subtotal</span>
-                                                <span>${{ number_format($subtotal, 2) }}</span>
-                                            </div>
-
-                                            @if ($discount > 0)
-                                                <div class="flex justify-between text-base text-green-600">
-                                                    <span>Discount ({{ $couponCode }})</span>
-                                                    <span>-${{ number_format($discount, 2) }}</span>
-                                                </div>
-                                            @endif
-
-                                            <div class="border-t border-gray-200 pt-4 mt-4">
-                                                <div class="flex justify-between items-center">
-                                                    <span class="text-base font-medium text-gray-900">Order
-                                                        Total</span>
-                                                    <span
-                                                        class="text-xl font-semibold text-gray-900">${{ number_format($newTotal, 2) }}</span>
-                                                </div>
-                                            </div>
-
-                                            <a href="{{ route('checkout.index') }}"
-                                                class="mt-6 block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-4 px-6 rounded-lg transition duration-150 text-center">
-                                                <div class="flex items-center justify-center space-x-2">
-                                                    <span>Proceed to Checkout</span>
-                                                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                                        stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                                    </svg>
-                                                </div>
-                                            </a>
-                                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                
+                {{-- Left: Cart Items List (8 cols) --}}
+                <div class="lg:col-span-8 space-y-4">
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden divide-y divide-gray-100">
+                        @foreach ($cartItems as $item)
+                            <div class="p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:bg-[#faf9f7]/60 transition duration-150">
+                                {{-- Item Cover & Title --}}
+                                <div class="flex items-center space-x-5 flex-1 min-w-0">
+                                    <div class="w-20 h-28 flex-shrink-0 rounded-xl overflow-hidden shadow-md bg-gray-50 border border-gray-100 book-depth-shadow">
+                                        <img src="{{ asset($item->attributes->image ?: 'images/covers/default.png') }}"
+                                            alt="{{ $item->name }}"
+                                            class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <a href="{{ route('books.show', $item->attributes->slug ?? $item->id) }}"
+                                            class="font-serif font-bold text-base sm:text-lg text-gray-900 hover:text-gold-600 transition truncate block"
+                                            title="{{ $item->name }}">
+                                            {{ $item->name }}
+                                        </a>
+                                        <p class="text-xs text-gray-400 mt-1">
+                                            Edition price: <span class="font-semibold text-gray-700">${{ number_format($item->price, 2) }}</span>
+                                        </p>
+                                        @if ($item->attributes->stock && $item->attributes->stock <= 5)
+                                            <span class="inline-block text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 mt-2">
+                                                Only {{ $item->attributes->stock }} left in stock
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
+
+                                {{-- Quantity Stepper & Update --}}
+                                <div class="flex items-center space-x-6 w-full sm:w-auto justify-between sm:justify-end">
+                                    <form action="{{ route('cart.update', $item->id) }}" method="POST"
+                                        class="flex items-center" x-data="{ qty: {{ $item->quantity }} }">
+                                        @csrf
+                                        @method('PATCH')
+                                        <div class="flex items-center border border-gray-200 rounded-xl bg-[#faf9f7] p-0.5 shadow-sm">
+                                            <button type="button" @click="if(qty > 1) { qty--; $nextTick(() => $refs.submitBtn.click()) }"
+                                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-700 hover:text-black shadow-sm font-bold text-sm active:scale-95 transition">
+                                                -
+                                            </button>
+                                            <input type="number" name="quantity" x-model="qty" min="1" max="{{ $item->attributes->stock ?? 99 }}"
+                                                class="w-12 text-center bg-transparent border-0 font-bold text-gray-900 focus:ring-0 text-sm p-0"
+                                                @change="$refs.submitBtn.click()">
+                                            <button type="button" @click="if(qty < {{ $item->attributes->stock ?? 99 }}) { qty++; $nextTick(() => $refs.submitBtn.click()) }"
+                                                class="w-8 h-8 flex items-center justify-center rounded-lg bg-white text-gray-700 hover:text-black shadow-sm font-bold text-sm active:scale-95 transition">
+                                                +
+                                            </button>
+                                        </div>
+                                        <button type="submit" x-ref="submitBtn" class="hidden">Update</button>
+                                    </form>
+
+                                    {{-- Line Total --}}
+                                    <div class="text-right min-w-[5.5rem]">
+                                        <span class="font-serif text-lg font-bold text-gray-900 block">
+                                            ${{ number_format($item->getPriceSum(), 2) }}
+                                        </span>
+                                    </div>
+
+                                    {{-- Delete Button --}}
+                                    <form action="{{ route('cart.destroy', $item->id) }}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                            class="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition"
+                                            title="Remove volume"
+                                            onclick="return confirm('Remove this volume from your bag?');">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    {{-- Bottom Utility Buttons --}}
+                    <div class="flex items-center justify-between pt-2">
+                        <a href="{{ route('books.index') }}"
+                            class="inline-flex items-center text-xs font-semibold text-gray-600 hover:text-gold-600 transition">
+                            ← Add more titles to bag
+                        </a>
+
+                        <form action="{{ route('cart.clear') }}" method="POST"
+                            onsubmit="return confirm('Are you sure you want to empty your entire bag?');">
+                            @csrf
+                            <button type="submit" class="text-xs font-semibold text-rose-600 hover:text-rose-800 transition">
+                                Empty shopping bag
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- Right: Order Summary & Coupon (4 cols) --}}
+                <div class="lg:col-span-4 space-y-6">
+                    {{-- Summary Card --}}
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 sm:p-8 space-y-6">
+                        <h2 class="font-serif text-xl font-bold text-gray-900 border-b border-gray-100 pb-4">
+                            Summary & Checkout
+                        </h2>
+
+                        <div class="space-y-3.5 text-sm">
+                            <div class="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span class="font-medium text-gray-900">${{ number_format($subtotal, 2) }}</span>
                             </div>
 
-                            {{-- Clear Cart Form --}}
-                            <div class="mt-8 border-t pt-6">
-                                <form action="{{ route('cart.clear') }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to clear your entire shopping cart?');"
-                                    class="flex justify-center">
+                            @if ($discount > 0)
+                                <div class="flex justify-between text-emerald-600">
+                                    <span>Discount ({{ $couponCode }})</span>
+                                    <span class="font-semibold">-${{ number_format($discount, 2) }}</span>
+                                </div>
+                            @endif
+
+                            <div class="flex justify-between text-gray-600">
+                                <span>Tracked Delivery</span>
+                                <span class="font-semibold {{ $subtotal >= $shippingThreshold ? 'text-emerald-600' : 'text-gray-900' }}">
+                                    {{ $subtotal >= $shippingThreshold ? 'FREE' : '$4.99' }}
+                                </span>
+                            </div>
+
+                            @php
+                                $shippingCost = ($subtotal >= $shippingThreshold) ? 0 : 4.99;
+                                $orderGrandTotal = $finalTotal + $shippingCost;
+                            @endphp
+
+                            <div class="border-t border-gray-100 pt-4 flex justify-between items-baseline">
+                                <div>
+                                    <span class="font-serif text-lg font-bold text-gray-900 block">Total</span>
+                                    <span class="text-[10px] text-gray-400">All local taxes included</span>
+                                </div>
+                                <span class="font-serif text-3xl font-bold text-gray-900">
+                                    ${{ number_format($orderGrandTotal, 2) }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {{-- Proceed to Checkout Button --}}
+                        <a href="{{ route('checkout.index') }}"
+                            class="w-full py-4 px-6 rounded-2xl text-center font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 hover:from-gold-300 hover:to-gold-400 shadow-lg transition-all duration-200 block text-base active:scale-98">
+                            Proceed to Checkout
+                        </a>
+
+                        <div class="text-center text-[11px] text-gray-400 flex items-center justify-center space-x-1.5 pt-1">
+                            <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            <span>Encrypted 256-Bit SSL Checkout</span>
+                        </div>
+                    </div>
+
+                    {{-- Coupon Voucher Card --}}
+                    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-bold text-gray-900 uppercase tracking-wider">
+                                Promotional Voucher
+                            </h3>
+                            <span class="text-[10px] text-gold-600 font-semibold">Special Offers</span>
+                        </div>
+
+                        @if (!session()->has('coupon'))
+                            <form action="{{ route('coupon.store') }}" method="POST" class="flex gap-2">
+                                @csrf
+                                <input type="text" name="coupon_code" placeholder="Enter coupon..." required
+                                    class="flex-1 text-xs bg-[#faf9f7] border border-gray-200 rounded-xl px-4 py-2.5 uppercase font-medium focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500">
+                                <button type="submit"
+                                    class="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-[#1a1a2e] hover:bg-[#252849] transition shadow-sm">
+                                    Apply
+                                </button>
+                            </form>
+                            @error('coupon_code')
+                                <p class="text-xs text-rose-600 mt-2">{{ $message }}</p>
+                            @enderror
+
+                            {{-- Suggestion Pills for Testing / Demo --}}
+                            <div class="mt-3 pt-3 border-t border-gray-100 text-[11px] text-gray-500 flex flex-wrap items-center gap-1.5">
+                                <span class="text-gray-400">Try code:</span>
+                                <button type="button" onclick="document.querySelector('input[name=coupon_code]').value='WELCOME10'"
+                                    class="px-2 py-0.5 rounded bg-gray-100 hover:bg-gold-50 hover:text-gold-700 text-gray-700 font-mono text-[10px] font-semibold transition border border-gray-200">
+                                    WELCOME10
+                                </button>
+                                <button type="button" onclick="document.querySelector('input[name=coupon_code]').value='SAVE5'"
+                                    class="px-2 py-0.5 rounded bg-gray-100 hover:bg-gold-50 hover:text-gold-700 text-gray-700 font-mono text-[10px] font-semibold transition border border-gray-200">
+                                    SAVE5
+                                </button>
+                            </div>
+                        @else
+                            <div class="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-xs font-bold text-emerald-800 uppercase tracking-wide">
+                                        {{ session('coupon')['code'] }}
+                                    </span>
+                                    <span class="text-[10px] text-emerald-700 bg-white/70 px-1.5 py-0.5 rounded font-medium">Applied</span>
+                                </div>
+                                <form action="{{ route('coupon.destroy') }}" method="POST">
                                     @csrf
-                                    <button type="submit"
-                                        class="group flex items-center space-x-2 px-4 py-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition duration-150">
-                                        <svg class="h-5 w-5 transform group-hover:rotate-12 transition-transform duration-150"
-                                            fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                        </svg>
-                                        <span class="font-medium">Clear Shopping Cart</span>
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs text-rose-600 hover:text-rose-800 font-semibold transition">
+                                        Remove
                                     </button>
                                 </form>
                             </div>
-                    @endif
+                        @endif
+                    </div>
+
                 </div>
+
             </div>
-        </div>
+        @endif
     </div>
 </x-app-layout>

@@ -1,107 +1,72 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('My Orders') }}
-        </h2>
+        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
+            Order History
+        </h1>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            {{-- Flash Messages --}}
-            @if (session('success'))
-                <div class="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded">
-                    {{ session('success') }}
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        @if ($orders->isEmpty())
+            <div class="max-w-xl mx-auto text-center py-20 px-6 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gold-50 text-gold-500 flex items-center justify-center">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
                 </div>
-            @endif
-            @if (session('error'))
-                <div class="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded">
-                    {{ session('error') }}
-                </div>
-            @endif
-            @if (session('info'))
-                <div class="mb-4 p-4 bg-blue-100 text-blue-700 border border-blue-300 rounded">
-                    {{ session('info') }}
-                </div>
-            @endif
+                <h2 class="font-serif text-xl font-bold text-gray-900 mb-2">No Past Orders Found</h2>
+                <p class="text-sm text-gray-500 mb-6">
+                    You have not placed any orders yet. Once you complete a purchase, your tracked orders and invoices will appear here.
+                </p>
+                <a href="{{ route('books.index') }}"
+                    class="inline-flex items-center px-6 py-3 rounded-2xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 shadow-md transition">
+                    Browse Books
+                </a>
+            </div>
+        @else
+            <div class="space-y-4">
+                @foreach ($orders as $order)
+                    <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:border-gold-300 transition duration-150">
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-mono text-sm font-bold text-gray-900">#ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</span>
+                                @php
+                                    $statusClasses = match($order->status) {
+                                        'paid', 'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                        'shipped'           => 'bg-blue-50 text-blue-700 border-blue-200',
+                                        'pending'           => 'bg-amber-50 text-amber-700 border-amber-200',
+                                        'failed'            => 'bg-rose-50 text-rose-700 border-rose-200',
+                                        default             => 'bg-gray-50 text-gray-700 border-gray-200',
+                                    };
+                                @endphp
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $statusClasses }}">
+                                    {{ ucfirst($order->status) }}
+                                </span>
+                            </div>
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    @if ($orders->isEmpty())
-                        <p class="text-center text-gray-500">You haven't placed any orders yet.</p>
-                        <div class="text-center mt-4">
-                            <a href="{{ route('books.index') }}"
-                                class="inline-block bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
-                                Start Shopping
+                            <p class="text-xs text-gray-500">
+                                Placed on <span class="font-medium text-gray-700">{{ $order->created_at->format('F j, Y') }}</span>
+                                • {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}
+                            </p>
+                        </div>
+
+                        <div class="flex items-center justify-between md:justify-end space-x-6 border-t md:border-t-0 pt-4 md:pt-0 border-gray-100">
+                            <div class="text-left md:text-right">
+                                <span class="text-xs text-gray-400 block">Total Billed</span>
+                                <span class="font-serif text-xl font-bold text-gray-900">${{ number_format($order->total_amount, 2) }}</span>
+                            </div>
+
+                            <a href="{{ route('orders.show', $order->id) }}"
+                                class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-[#1a1a2e] hover:text-white border border-gray-200 transition duration-150">
+                                View Order Details →
                             </a>
                         </div>
-                    @else
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Order #</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Date</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Items</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Total</th>
-                                        <th scope="col"
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    @foreach ($orders as $order)
-                                        <tr>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                #{{ $order->id }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $order->created_at->format('Y-m-d') }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap">
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                 @switch($order->status)
-                                                     @case('pending') bg-yellow-100 text-yellow-800 @break
-                                                     @case('paid')
-                                                     @case('processing') bg-blue-100 text-blue-800 @break
-                                                     @case('shipped') bg-green-100 text-green-800 @break
-                                                     @case('completed') bg-green-100 text-green-800 @break
-                                                     @case('failed') bg-red-100 text-red-800 @break
-                                                     @default bg-gray-100 text-gray-800
-                                                 @endswitch
-                                             ">
-                                                    {{ ucfirst($order->status) }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                {{ $order->items_count }}</td> {{-- Use eager loaded count --}}
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                                ${{ number_format($order->total_amount, 2) }}</td>
-                                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <a href="{{ route('orders.show', $order->id) }}"
-                                                    class="text-indigo-600 hover:text-indigo-900">View Details</a>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        {{-- Pagination --}}
-                        <div class="mt-4">
-                            {{ $orders->links() }}
-                        </div>
-                    @endif
-                </div>
+                    </div>
+                @endforeach
             </div>
-        </div>
+
+            <div class="mt-8">
+                {{ $orders->links() }}
+            </div>
+        @endif
     </div>
 </x-app-layout>

@@ -1,61 +1,93 @@
 {{-- resources/views/partials/_book_card.blade.php --}}
-{{-- Expects a $book variable to be passed --}}
-<div
-    class="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
-    <div> {{-- Content wrapper --}}
-        <div class="relative overflow-hidden">
-            <a href="{{ route('books.show', $book->slug) }}" class="block aspect-w-3 aspect-h-4">
-                <img src="{{ $book->cover_image ?: asset('images/covers/default.png') }}" alt="{{ $book->title }} Cover"
-                    class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
+@props(['book'])
+
+<div class="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/80 hover:border-gold-300 flex flex-col justify-between hover:-translate-y-1">
+    <div>
+        {{-- Cover Image Container with Book Depth Effect --}}
+        <div class="relative overflow-hidden aspect-[3/4] bg-gradient-to-tr from-gray-100 to-gray-50 flex items-center justify-center p-4">
+            <a href="{{ route('books.show', $book->slug) }}" class="block w-full h-full relative group/img">
+                <div class="w-full h-full rounded-lg overflow-hidden book-depth-shadow transition-transform duration-500 group-hover:scale-[1.03]">
+                    <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
+                        alt="{{ $book->title }}"
+                        loading="lazy"
+                        class="w-full h-full object-cover">
+                </div>
             </a>
-            {{-- Category Badge --}}
-            <a href="{{ route('categories.show', $book->category->slug) }}"
-                class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 transition duration-150">
-                {{ $book->category->name }}
-            </a>
+
+            {{-- Floating Category Badge --}}
+            @if ($book->category)
+                <a href="{{ route('categories.show', $book->category->slug) }}"
+                    class="absolute top-3 left-3 bg-[#1a1a2e]/90 backdrop-blur-md text-gold-400 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-gold-500/30 hover:bg-[#1a1a2e] transition shadow-sm z-10">
+                    {{ $book->category->name }}
+                </a>
+            @endif
+
+            {{-- Floating Stock Status Badge --}}
+            <div class="absolute top-3 right-3 z-10">
+                @if ($book->stock > 0)
+                    @if ($book->stock <= 5)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/95 text-white backdrop-blur-sm shadow-sm">
+                            <span class="w-1.5 h-1.5 rounded-full bg-white mr-1 animate-pulse"></span>
+                            Only {{ $book->stock }} Left
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-600/90 text-white backdrop-blur-sm shadow-sm">
+                            In Stock
+                        </span>
+                    @endif
+                @else
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-600/90 text-white backdrop-blur-sm shadow-sm">
+                        Sold Out
+                    </span>
+                @endif
+            </div>
         </div>
 
-        <div class="p-5">
-            <a href="{{ route('books.show', $book->slug) }}"
-                class="block group-hover:text-indigo-600 transition-colors duration-150">
-                <h3 class="font-semibold text-lg leading-snug mb-2 line-clamp-2">{{ $book->title }}</h3>
-            </a>
-            <div class="flex items-center justify-between mb-4">
-                <p class="text-gray-600 text-sm">by <span class="font-medium">{{ $book->author }}</span></p>
-                <p class="text-lg font-bold text-gray-900">${{ number_format($book->price, 2) }}</p>
-            </div>
+        {{-- Book Metadata --}}
+        <div class="p-5 flex flex-col">
+            <p class="text-[11px] uppercase tracking-wider text-gray-500 font-medium mb-1 truncate">
+                {{ $book->author }}
+            </p>
 
-            {{-- Rating & Stock Info --}}
-            <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <div class="flex items-center">
-                    <div class="flex items-center">
-                        @for ($i = 1; $i <= 5; $i++)
-                            <svg class="w-4 h-4 {{ $i <= ($book->rating ?? 4) ? 'text-yellow-400' : 'text-gray-300' }}"
-                                fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                        @endfor
-                    </div>
-                </div>
-                <span class="{{ $book->in_stock ? 'text-green-600' : 'text-red-600' }} font-medium">
-                    {{ $book->in_stock ? 'In Stock' : 'Out of Stock' }}
+            <a href="{{ route('books.show', $book->slug) }}" class="group-hover:text-gold-600 transition-colors">
+                <h3 class="font-serif font-bold text-gray-900 text-base leading-snug line-clamp-2 min-h-[2.75rem]" title="{{ $book->title }}">
+                    {{ $book->title }}
+                </h3>
+            </a>
+
+            <div class="mt-3 flex items-baseline justify-between">
+                <span class="font-serif text-xl font-bold text-gray-900">
+                    ${{ number_format($book->price, 2) }}
                 </span>
+                @if ($book->isbn)
+                    <span class="text-[10px] text-gray-400 font-mono tracking-tight" title="ISBN: {{ $book->isbn }}">
+                        ISBN {{ Str::limit($book->isbn, 8) }}
+                    </span>
+                @endif
             </div>
         </div>
     </div>
 
-    {{-- Add to Cart Button Area --}}
-    <div class="px-5 pb-5 mt-auto"> {{-- Added mt-auto to push button down --}}
-        <form action="{{ route('cart.store') }}" method="POST" class="w-full">
-            @csrf
-            <input type="hidden" name="book_id" value="{{ $book->id }}">
-            <input type="hidden" name="quantity" value="1">
-            <button type="submit"
-                class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                {{ !$book->in_stock ? 'disabled' : '' }}>
-                {{ !$book->in_stock ? 'Out of Stock' : 'Add to Cart' }}
+    {{-- Actions / Add to Cart --}}
+    <div class="p-5 pt-0 mt-auto">
+        @if ($book->stock > 0)
+            <form action="{{ route('cart.store') }}" method="POST">
+                @csrf
+                <input type="hidden" name="book_id" value="{{ $book->id }}">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit"
+                    class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2 active:scale-95 group/btn">
+                    <svg class="w-4 h-4 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    <span>Add to Bag</span>
+                </button>
+            </form>
+        @else
+            <button disabled
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 bg-gray-100 cursor-not-allowed">
+                Out of Stock
             </button>
-        </form>
+        @endif
     </div>
 </div>

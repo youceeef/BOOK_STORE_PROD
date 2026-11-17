@@ -209,6 +209,16 @@ class WebhookController extends CashierController
             DB::commit();
             Log::info("Webhook: [{$paymentIntentId}] - DB Transaction Committed SUCCESSFULLY!");
 
+            // Dispatch order confirmation email
+            try {
+                if ($user && $user->email) {
+                    \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OrderConfirmation($order));
+                    Log::info("Webhook: [{$paymentIntentId}] - Dispatched order confirmation email to {$user->email}.");
+                }
+            } catch (Exception $mailEx) {
+                Log::warning("Webhook: [{$paymentIntentId}] - Confirmation email not sent: " . $mailEx->getMessage());
+            }
+
             // --- Step 7 & 8 (Post-Commit Actions & Success Response) ---
             Log::info("Webhook: [{$paymentIntentId}] - Order creation process complete.");
             return $this->successMethod("Webhook Handled: Order {$order->id} Created");

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\CheckoutRequest;
 use Illuminate\Support\Facades\Auth;
 use Darryldecode\Cart\Facades\CartFacade as Cart; // Use Cart facade
 use Stripe\Stripe; // Stripe PHP library (Cashier uses it internally)
@@ -85,15 +85,10 @@ class CheckoutController extends Controller
      * Process the payment after Stripe confirmation on the frontend.
      * Re-validates coupon, calculates final amount, initiates charge.
      */
-    public function process(Request $request): RedirectResponse
+    public function process(CheckoutRequest $request): RedirectResponse
     {
         $user = Auth::user();
-        $paymentMethod = $request->input('payment_method');
-
-        // Basic validation for payment method presence
-        if (!$paymentMethod) {
-            return redirect()->route('checkout.index')->with('error', 'Payment method details are missing.');
-        }
+        $paymentMethod = $request->validated()['payment_method'];
 
         // --- Recalculate totals and RE-VALIDATE coupon ---
         $subtotal = Cart::getSubTotal(false); // Get subtotal without conditions

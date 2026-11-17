@@ -2,55 +2,84 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category; // Import Category if adding filtering later
+use App\Models\Category;
 use App\Models\Book;
-use Illuminate\Http\Request; // Keep Request for potential future use
-use Illuminate\Support\Facades\Log;
-use Illuminate\View\View; // Import View
+use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class BookController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of books with search, category filtering, and sorting.
      */
-    public function index(Request $request): View // Inject Request
+    public function index(Request $request): View
     {
-        // Start with the base query including category relationship
         $query = Book::query()->with('category');
 
-        $searchTerm = $request->input('search'); // Get search term from request
+        $searchTerm = $request->input('search');
+        $selectedCategory = $request->input('category');
+        $sort = $request->input('sort', 'newest');
+        $inStockOnly = $request->boolean('in_stock');
 
-        // Apply search filter if search term exists
+        // Search Filter
         if ($searchTerm) {
-            Log::info("Searching for: {$searchTerm}"); // Log search term
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('title', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('author', 'LIKE', "%{$searchTerm}%")
                     ->orWhere('isbn', 'LIKE', "%{$searchTerm}%");
-                // Optional: ->orWhere('description', 'LIKE', "%{$searchTerm}%");
             });
         }
 
-        // Continue with ordering and pagination
-        $books = $query->latest()->paginate(12)
-            ->withQueryString(); // IMPORTANT: Appends query string (like ?search=...) to pagination links
+        // Category Filter
+        if ($selectedCategory) {
+            $query->whereHas('category', function ($q) use ($selectedCategory) {
+                $q->where('slug', $selectedCategory);
+            });
+        }
 
-        // Pass books and the search term (for display/form value) to the view
-        return view('books.index', compact('books', 'searchTerm'));
+        // In-stock Filter
+        if ($inStockOnly) {
+            $query->where('stock', '>', 0);
+        }
+
+        // Sorting
+        match ($sort) {
+            'price_asc'  => $query->orderBy('price', 'asc'),
+            'price_desc' => $query->orderBy('price', 'desc'),
+            'title_asc'  => $query->orderBy('title', 'asc'),
+            default      => $query->latest(),
+        };
+
+        $books = $query->paginate(12)->withQueryString();
+
+        $categories = cache()->remember('active_categories', 3600, fn() =>
+            Category::where('active', 1)->withCount('books')->orderBy('name')->get()
+        );
+
+        return view('books.index', compact(
+            'books',
+            'categories',
+            'searchTerm',
+            'selectedCategory',
+            'sort',
+            'inStockOnly'
+        ));
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified book with related recommendations.
      */
-    public function show(Book $book): View // Use Route Model Binding
+    public function show(Book $book): View
     {
-        // Laravel automatically finds the Book by its ID (or slug if configured)
-        // Eager load category if needed (often useful on detail page too)
         $book->load('category');
 
-        // Pass the single book to the view
-        return view('books.show', compact('book'));
-    }
+        $relatedBooks = Book::with('category')
+            ->where('category_id', $book->category_id)
+            ->where('id', '!=', $book->id)
+            ->where('stock', '>', 0)
+            ->take(4)
+            ->get();
 
-    // Store, Create, Edit, Update, Destroy methods will be used for Admin later
+        return view('books.show', compact('book', 'relatedBooks'));
+    }
 }
