@@ -35,12 +35,13 @@ COPY --from=frontend /app/public/build ./public/build
 
 RUN composer dump-autoload --optimize --no-dev
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p /run/nginx /var/log/nginx \
+    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /run/nginx /var/log/nginx
 
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
-EXPOSE 80
+EXPOSE 8080
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
