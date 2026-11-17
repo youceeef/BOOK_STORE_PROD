@@ -57,16 +57,19 @@ class CheckoutController extends Controller
             }
         }
 
-        // Ensure user is Stripe customer
-        $user->createOrGetStripeCustomer();
+        // Check if Stripe credentials are configured
+        if (empty(config('cashier.secret')) || empty(config('cashier.key'))) {
+            Log::warning("Checkout Index: Stripe credentials missing (STRIPE_KEY or STRIPE_SECRET).");
+            return redirect()->route('cart.index')->with('error', 'Stripe payment gateway is not yet configured. Please set STRIPE_KEY and STRIPE_SECRET in your environment.');
+        }
 
-        // Create SetupIntent for securely collecting payment method
+        // Ensure user is Stripe customer & create SetupIntent
         try {
+            $user->createOrGetStripeCustomer();
             $intent = $user->createSetupIntent();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             Log::error("Stripe Setup Intent creation failed for user {$user->id}: " . $e->getMessage());
-            // Redirect back to cart with error if SetupIntent fails
-            return redirect()->route('cart.index')->with('error', 'Could not initiate the secure payment process. Please try again.');
+            return redirect()->route('cart.index')->with('error', 'Stripe error: ' . $e->getMessage());
         }
 
         // Pass calculated totals, intent secret, etc., to the view
@@ -187,7 +190,7 @@ class CheckoutController extends Controller
                 'cashier.payment',
                 [$exception->payment->id, 'redirect' => route('checkout.process')] // Redirect to Cashier's payment page
             );
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             // Handle other exceptions (card declines, API errors, etc.)
             Log::error("Checkout Process Error for user {$user->id}: " . $e->getMessage());
             // Optionally log stack trace: Log::error($e);
