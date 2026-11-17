@@ -1,5 +1,17 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        x-data="{
+            readerOpen: false,
+            fontSize: 'base',
+            readerTheme: 'paper',
+            scrollProgress: 0,
+            updateProgress(e) {
+                const el = e.target;
+                const total = el.scrollHeight - el.clientHeight;
+                this.scrollProgress = total > 0 ? Math.round((el.scrollTop / total) * 100) : 0;
+            }
+        }"
+        @keydown.escape.window="readerOpen = false">
         {{-- Breadcrumb Navigation: Quiet, minimal --}}
         <nav class="flex items-center space-x-2 rtl:space-x-reverse text-xs text-zinc-500 dark:text-zinc-400 mb-8">
             <a href="{{ route('home') }}" class="hover:text-zinc-900 dark:hover:text-white transition">Home</a>
@@ -26,6 +38,20 @@
                             alt="{{ $book->title }} Cover"
                             class="max-h-full max-w-full object-contain shadow-md">
                     </div>
+
+                    {{-- "Look Inside" Sample Reader Button --}}
+                    @if ($book->hasSample())
+                        <div class="mt-3.5 w-full max-w-xs">
+                            <button type="button" @click="readerOpen = true"
+                                class="w-full py-2.5 px-4 rounded-md text-xs font-medium text-zinc-900 dark:text-white bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 transition flex items-center justify-center space-x-2 rtl:space-x-reverse shadow-xs">
+                                <svg class="w-4 h-4 text-zinc-600 dark:text-zinc-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                </svg>
+                                <span>Look Inside (Sample Excerpt)</span>
+                                <span class="text-[10px] text-zinc-400 dark:text-zinc-400 font-mono">~{{ $book->readingTime() }} min</span>
+                            </button>
+                        </div>
+                    @endif
 
                     {{-- Specifications: Clean table format --}}
                     <div class="mt-6 w-full max-w-xs divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
@@ -579,6 +605,150 @@
                     @foreach ($relatedBooks as $relatedBook)
                         @include('partials._book_card', ['book' => $relatedBook])
                     @endforeach
+                </div>
+            </div>
+        @endif
+
+        {{-- ========================================================
+             "Look Inside" Chapter Reader Modal (Alpine.js)
+             ======================================================== --}}
+        @if ($book->hasSample())
+            <div x-show="readerOpen" x-cloak
+                class="fixed inset-0 z-50 overflow-hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+                x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-150"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95">
+
+                <div @click.away="readerOpen = false"
+                    :class="{
+                        'bg-[#fbf7ee] text-[#2c2214] border-[#e8dfcf]': readerTheme === 'paper',
+                        'bg-white text-zinc-900 border-zinc-200': readerTheme === 'light',
+                        'bg-[#0e0f15] text-zinc-100 border-zinc-800': readerTheme === 'dark'
+                    }"
+                    class="relative w-full max-w-3xl h-[88vh] flex flex-col rounded-xl shadow-2xl overflow-hidden border transition-colors duration-200">
+
+                    {{-- Reading Progress Bar --}}
+                    <div class="h-1 bg-zinc-200/50 dark:bg-zinc-800/50 w-full flex-shrink-0">
+                        <div class="h-1 bg-zinc-900 dark:bg-zinc-100 transition-all duration-150"
+                            :style="'width: ' + scrollProgress + '%'"></div>
+                    </div>
+
+                    {{-- Modal Header & Reader Controls --}}
+                    <div class="px-5 py-3 border-b flex items-center justify-between flex-shrink-0"
+                        :class="{
+                            'border-[#e8dfcf] bg-[#f7f0e3]': readerTheme === 'paper',
+                            'border-zinc-200 bg-zinc-50': readerTheme === 'light',
+                            'border-zinc-800 bg-zinc-900/60': readerTheme === 'dark'
+                        }">
+                        <div class="min-w-0 pr-4">
+                            <span class="text-[10px] uppercase font-mono tracking-wider opacity-70 block">Sample Excerpt</span>
+                            <h3 class="font-serif font-bold text-sm truncate">{{ $book->title }}</h3>
+                        </div>
+
+                        <div class="flex items-center space-x-2.5 rtl:space-x-reverse flex-shrink-0">
+                            {{-- Theme Selector --}}
+                            <div class="inline-flex rounded-md p-0.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs">
+                                <button type="button" @click="readerTheme = 'paper'"
+                                    :class="readerTheme === 'paper' ? 'bg-white shadow-xs font-semibold text-zinc-900' : 'opacity-70 hover:opacity-100'"
+                                    class="px-2 py-0.5 rounded text-[11px] transition">
+                                    Paper
+                                </button>
+                                <button type="button" @click="readerTheme = 'light'"
+                                    :class="readerTheme === 'light' ? 'bg-white shadow-xs font-semibold text-zinc-900' : 'opacity-70 hover:opacity-100'"
+                                    class="px-2 py-0.5 rounded text-[11px] transition">
+                                    Clean
+                                </button>
+                                <button type="button" @click="readerTheme = 'dark'"
+                                    :class="readerTheme === 'dark' ? 'bg-zinc-800 shadow-xs font-semibold text-white' : 'opacity-70 hover:opacity-100'"
+                                    class="px-2 py-0.5 rounded text-[11px] transition">
+                                    Midnight
+                                </button>
+                            </div>
+
+                            {{-- Font Sizing Buttons --}}
+                            <div class="inline-flex rounded-md p-0.5 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 text-xs">
+                                <button type="button"
+                                    @click="fontSize = fontSize === 'xl' ? 'lg' : (fontSize === 'lg' ? 'base' : 'sm')"
+                                    title="Decrease font size"
+                                    class="px-2 py-0.5 rounded text-[11px] opacity-70 hover:opacity-100 transition">
+                                    A-
+                                </button>
+                                <button type="button"
+                                    @click="fontSize = fontSize === 'sm' ? 'base' : (fontSize === 'base' ? 'lg' : 'xl')"
+                                    title="Increase font size"
+                                    class="px-2 py-0.5 rounded text-[11px] opacity-70 hover:opacity-100 transition">
+                                    A+
+                                </button>
+                            </div>
+
+                            {{-- Close Button --}}
+                            <button type="button" @click="readerOpen = false"
+                                class="w-7 h-7 rounded-md flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Reader Scrollable Body --}}
+                    <div class="flex-1 overflow-y-auto px-6 sm:px-14 py-8 sm:py-12 select-text"
+                        @scroll="updateProgress($event)">
+                        <div class="max-w-xl mx-auto space-y-6"
+                            :class="{
+                                'text-sm leading-relaxed': fontSize === 'sm',
+                                'text-base leading-relaxed': fontSize === 'base',
+                                'text-lg leading-loose': fontSize === 'lg',
+                                'text-xl leading-loose': fontSize === 'xl'
+                            }">
+
+                            <div class="text-center pb-6 mb-6 border-b border-current/10">
+                                <span class="text-[11px] uppercase font-mono tracking-widest opacity-60 block mb-1">Introductory Pages</span>
+                                <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight mb-2">{{ $book->title }}</h1>
+                                <p class="text-xs opacity-75">by {{ $book->author }}</p>
+                            </div>
+
+                            @php
+                                $paragraphs = array_filter(explode("\n\n", trim($book->sample_excerpt ?? '')));
+                            @endphp
+
+                            @foreach ($paragraphs as $index => $paragraph)
+                                @if ($index === 0)
+                                    <p class="font-serif first-letter:float-left first-letter:text-5xl first-letter:font-bold first-letter:mr-3 first-letter:leading-none">
+                                        {{ $paragraph }}
+                                    </p>
+                                @else
+                                    <p class="font-serif">
+                                        {{ $paragraph }}
+                                    </p>
+                                @endif
+                            @endforeach
+
+                            {{-- End of Excerpt Banner --}}
+                            <div class="mt-12 pt-8 border-t border-current/15 text-center space-y-4">
+                                <p class="font-serif italic text-sm opacity-80">
+                                    You have reached the conclusion of this free sample excerpt.
+                                </p>
+
+                                @if ($book->stock > 0)
+                                    <form action="{{ route('cart.store') }}" method="POST" class="inline-block">
+                                        @csrf
+                                        <input type="hidden" name="book_id" value="{{ $book->id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit"
+                                            class="inline-flex items-center px-5 py-2.5 rounded-md text-xs font-semibold text-white bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition shadow-xs">
+                                            <span>Add Full Archival Volume to Bag (${{ number_format($book->price, 2) }})</span>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span class="text-xs opacity-75">This volume is currently sold out.</span>
+                                @endif
+                            </div>
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         @endif

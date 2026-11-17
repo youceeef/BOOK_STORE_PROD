@@ -85,10 +85,26 @@
     {{-- Description --}}
     <div>
         <label for="description" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">Synopsis / Description</label>
-        <textarea name="description" id="description" rows="5"
+        <textarea name="description" id="description" rows="4"
             placeholder="Provide historical context, themes, or publisher overview..."
             class="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-3.5 py-2.5 focus:border-zinc-900 dark:focus:border-white focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white transition @error('description') border-rose-500 @enderror">{{ old('description', $book->description ?? '') }}</textarea>
         @error('description')
+            <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
+        @enderror
+    </div>
+
+    {{-- Sample Excerpt / First Chapter ("Look Inside" Reader) --}}
+    <div>
+        <div class="flex items-center justify-between mb-1.5">
+            <label for="sample_excerpt" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400">
+                Sample Excerpt / First Chapter (Look Inside Reader)
+            </label>
+            <span class="text-[11px] text-zinc-400">Powers the interactive reader modal</span>
+        </div>
+        <textarea name="sample_excerpt" id="sample_excerpt" rows="6"
+            placeholder="Paste Chapter 1 or opening prose excerpt here for reader previews..."
+            class="w-full text-xs font-serif leading-relaxed rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white px-3.5 py-2.5 focus:border-zinc-900 dark:focus:border-white focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white transition @error('sample_excerpt') border-rose-500 @enderror">{{ old('sample_excerpt', $book->sample_excerpt ?? '') }}</textarea>
+        @error('sample_excerpt')
             <p class="mt-1 text-xs text-rose-600 dark:text-rose-400">{{ $message }}</p>
         @enderror
     </div>

@@ -59,6 +59,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             BookSeeder::class,
             ReviewSeeder::class,
+            SampleExcerptSeeder::class,
         ]);
 
         // 5. Promotional Coupons

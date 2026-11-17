@@ -16,6 +16,7 @@ class Book extends Model
         'category_id',
         'author',
         'description',
+        'sample_excerpt',
         'isbn',
         'cover_image',
         'price',
@@ -88,5 +89,16 @@ class Book extends Model
         }
 
         return $breakdown;
+    }
+
+    public function hasSample(): bool
+    {
+        return !empty(trim($this->sample_excerpt ?? ''));
+    }
+
+    public function readingTime(): int
+    {
+        $words = str_word_count(strip_tags($this->sample_excerpt ?? ''));
+        return max(1, (int) ceil($words / 200));
     }
 }

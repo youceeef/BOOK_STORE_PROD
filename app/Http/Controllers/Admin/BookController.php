@@ -42,6 +42,7 @@ class BookController extends Controller
             'category_id' => 'required|exists:categories,id',
             'author' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'sample_excerpt' => 'nullable|string',
             'isbn' => 'nullable|string|unique:books,isbn|max:20',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
@@ -104,6 +105,7 @@ class BookController extends Controller
             'category_id' => 'required|exists:categories,id',
             'author' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'sample_excerpt' => 'nullable|string',
             'isbn' => 'nullable|string|max:20|unique:books,isbn,' . $book->id, // Ignore current book's ISBN
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
