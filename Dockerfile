@@ -6,9 +6,8 @@ RUN npm install
 COPY resources resources
 RUN npm run build
 
-FROM php:8.2-fpm-alpine AS production
+FROM php:8.2-cli-alpine AS production
 RUN apk add --no-cache \
-    nginx \
     curl \
     libpng-dev \
     libjpeg-turbo-dev \
@@ -35,10 +34,8 @@ COPY --from=frontend /app/public/build ./public/build
 
 RUN composer dump-autoload --optimize --no-dev
 
-RUN mkdir -p /run/nginx /var/log/nginx \
-    && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /run/nginx /var/log/nginx
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
