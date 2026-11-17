@@ -1,3 +1,7 @@
+[variables]
+RAILPACK_PHP_VERSION = "8.2"
+NIXPACKS_PHP_VERSION = "8.2"
+
 [phases.setup]
 nixPkgs = [
   "php82",
@@ -26,4 +30,4 @@ cmds = [
 ]
 
 [start]
-cmd = "php artisan storage:link || true ; php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan storage:link || true ; php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
