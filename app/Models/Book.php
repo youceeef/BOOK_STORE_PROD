@@ -57,4 +57,36 @@ class Book extends Model
     {
         return $this->stock > 0;
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class)->latest();
+    }
+
+    public function averageRating(): float
+    {
+        return (float) round($this->reviews()->avg('rating') ?? 0, 1);
+    }
+
+    public function reviewsCount(): int
+    {
+        return (int) $this->reviews()->count();
+    }
+
+    public function ratingBreakdown(): array
+    {
+        $total = $this->reviewsCount();
+        $breakdown = [];
+
+        for ($star = 5; $star >= 1; $star--) {
+            $count = $this->reviews()->where('rating', $star)->count();
+            $percentage = $total > 0 ? round(($count / $total) * 100) : 0;
+            $breakdown[$star] = [
+                'count' => $count,
+                'percentage' => $percentage,
+            ];
+        }
+
+        return $breakdown;
+    }
 }

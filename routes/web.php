@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController; // Import
 use App\Http\Controllers\CouponController;
@@ -56,6 +57,15 @@ Route::prefix('wishlist')->name('wishlist.')->group(function () {
     Route::post('/toggle', [WishlistController::class, 'toggle'])->name('toggle');
     Route::delete('/{book}', [WishlistController::class, 'destroy'])->name('destroy');
     Route::post('/{book}/move-to-bag', [WishlistController::class, 'moveToBag'])->name('move-to-bag');
+});
+
+// Reviews & Social Proof Routes
+Route::middleware('auth')->group(function () {
+    Route::post('/books/{book}/reviews', [ReviewController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('reviews.store');
+    Route::post('/reviews/{review}/helpful', [ReviewController::class, 'helpful'])
+        ->name('reviews.helpful');
 });
 
 Route::post('/coupon', [CouponController::class, 'store'])

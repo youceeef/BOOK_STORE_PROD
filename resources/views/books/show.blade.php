@@ -294,5 +294,293 @@
 
             </div>
         </div>
+
+        {{-- ========================================================
+             Verified Reader Reviews & Social Proof Section
+             ======================================================== --}}
+        <div class="mt-12 bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 sm:p-10 mb-12"
+            x-data="{
+                showForm: false,
+                rating: {{ $userReview ? $userReview->rating : 5 }},
+                hoverRating: 0,
+                submitting: false,
+                async submitReview(e) {
+                    e.preventDefault();
+                    this.submitting = true;
+                    const form = e.target;
+                    const formData = new FormData(form);
+
+                    try {
+                        const res = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: formData
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            window.dispatchEvent(new CustomEvent('notify', {
+                                detail: {
+                                    title: 'Review Published',
+                                    message: data.message,
+                                    type: 'success'
+                                }
+                            }));
+                            setTimeout(() => window.location.reload(), 1200);
+                        } else {
+                            window.dispatchEvent(new CustomEvent('notify', {
+                                detail: {
+                                    title: 'Review Error',
+                                    message: data.message || 'Please check your inputs.',
+                                    type: 'error'
+                                }
+                            }));
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        form.submit();
+                    } finally {
+                        this.submitting = false;
+                    }
+                }
+            }">
+
+            <div class="border-b border-zinc-200 dark:border-zinc-800 pb-6 mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                    <span class="text-xs uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-1">Social Proof</span>
+                    <h2 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Reader Reviews & Critique</h2>
+                </div>
+
+                @auth
+                    <button type="button" @click="showForm = !showForm"
+                        class="inline-flex items-center px-4 py-2 rounded-md text-xs font-medium text-white bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition shadow-xs self-start md:self-auto">
+                        <svg class="w-3.5 h-3.5 mr-1.5 rtl:mr-0 rtl:ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span x-text="showForm ? 'Cancel Review' : '{{ $userReview ? 'Edit Your Review' : 'Write a Review' }}'"></span>
+                    </button>
+                @else
+                    <a href="{{ route('login') }}"
+                        class="inline-flex items-center px-4 py-2 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition self-start md:self-auto">
+                        Sign in to review →
+                    </a>
+                @endauth
+            </div>
+
+            {{-- Aggregated Rating Overview & Histogram --}}
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center pb-8 border-b border-zinc-100 dark:border-zinc-800/80 mb-8">
+                {{-- Big Score --}}
+                <div class="md:col-span-4 flex flex-col items-center justify-center p-6 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200 dark:border-zinc-800 text-center">
+                    <span class="font-serif text-5xl font-bold text-zinc-900 dark:text-white mb-2">
+                        {{ $averageRating > 0 ? number_format($averageRating, 1) : '—' }}
+                    </span>
+                    <div class="flex items-center space-x-1 rtl:space-x-reverse text-amber-500 mb-2">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <svg class="w-4 h-4 {{ $i <= round($averageRating) ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700 fill-current' }}" viewBox="0 0 20 20">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        @endfor
+                    </div>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                        {{ $reviewsCount }} {{ Str::plural('rating', $reviewsCount) }} recorded
+                    </p>
+                </div>
+
+                {{-- Histogram Bars --}}
+                <div class="md:col-span-8 space-y-2">
+                    @foreach ($ratingBreakdown as $star => $data)
+                        <div class="flex items-center text-xs space-x-3 rtl:space-x-reverse">
+                            <span class="w-8 font-mono text-zinc-600 dark:text-zinc-400 text-right">{{ $star }} ★</span>
+                            <div class="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                                <div class="bg-zinc-900 dark:bg-white h-2 rounded-full transition-all duration-500" style="width: {{ $data['percentage'] }}%"></div>
+                            </div>
+                            <span class="w-16 font-mono text-[11px] text-zinc-400 text-right">
+                                {{ $data['percentage'] }}% ({{ $data['count'] }})
+                            </span>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Review Submission Form Drawer --}}
+            @auth
+                <div x-show="showForm" x-cloak class="mb-10 p-6 bg-zinc-50 dark:bg-zinc-900/60 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                    <h3 class="font-serif text-base font-bold text-zinc-900 dark:text-white mb-1">
+                        {{ $userReview ? 'Update Your Review' : 'Share Your Review' }}
+                    </h3>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-5">
+                        Your honest feedback guides fellow readers.
+                    </p>
+
+                    @if ($isVerifiedBuyer)
+                        <div class="mb-5 p-3 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center">
+                            <span class="font-bold mr-1.5 rtl:mr-0 rtl:ml-1.5">✓ Verified Buyer:</span>
+                            You purchased this volume through Lara Bookstore. Your critique will receive an official Verified Buyer badge.
+                        </div>
+                    @endif
+
+                    <form action="{{ route('reviews.store', $book->slug) }}" method="POST" @submit="submitReview" class="space-y-4">
+                        @csrf
+
+                        {{-- Star Selection --}}
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Your Rating</label>
+                            <input type="hidden" name="rating" :value="rating">
+                            <div class="flex items-center space-x-1.5 rtl:space-x-reverse cursor-pointer">
+                                <template x-for="i in 5" :key="i">
+                                    <button type="button"
+                                        @click="rating = i"
+                                        @mouseenter="hoverRating = i"
+                                        @mouseleave="hoverRating = 0"
+                                        class="p-1 focus:outline-none transition-transform hover:scale-110">
+                                        <svg class="w-6 h-6 transition-colors"
+                                            :class="(hoverRating || rating) >= i ? 'text-amber-500 fill-current' : 'text-zinc-300 dark:text-zinc-700 fill-none'"
+                                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                                        </svg>
+                                    </button>
+                                </template>
+                                <span class="text-xs text-zinc-500 font-mono ml-2 rtl:ml-0 rtl:mr-2" x-text="`${hoverRating || rating} / 5 Stars`"></span>
+                            </div>
+                        </div>
+
+                        {{-- Title --}}
+                        <div>
+                            <label for="review_title" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Review Headline (Optional)</label>
+                            <input type="text" id="review_title" name="title"
+                                value="{{ old('title', $userReview?->title) }}"
+                                placeholder="e.g. Masterful prose, exquisite printing quality"
+                                class="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#12131a] text-zinc-900 dark:text-white focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white">
+                        </div>
+
+                        {{-- Comment --}}
+                        <div>
+                            <label for="review_comment" class="block text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1.5">Your Critique / Thoughts</label>
+                            <textarea id="review_comment" name="comment" rows="4" required minlength="5"
+                                placeholder="Reflect on the author's writing, themes, paper weight, and translation fidelity..."
+                                class="w-full text-xs rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#12131a] text-zinc-900 dark:text-white focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white">{{ old('comment', $userReview?->comment) }}</textarea>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 rtl:space-x-reverse pt-2">
+                            <button type="button" @click="showForm = false"
+                                class="px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                                Cancel
+                            </button>
+                            <button type="submit" :disabled="submitting"
+                                class="px-4 py-2 rounded-md text-xs font-medium text-white bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition shadow-xs disabled:opacity-75">
+                                <span x-text="submitting ? 'Publishing...' : 'Publish Critique'"></span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            @endauth
+
+            {{-- Reviews Stream --}}
+            <div class="space-y-6">
+                @forelse ($book->reviews as $review)
+                    <div class="p-5 rounded-lg border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/30 space-y-3"
+                        x-data="{
+                            helpfulCount: {{ $review->helpful_count }},
+                            voted: false,
+                            voting: false,
+                            async voteHelpful() {
+                                if (this.voted || this.voting) return;
+                                this.voting = true;
+                                try {
+                                    const res = await fetch('{{ route('reviews.helpful', $review->id) }}', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Accept': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        }
+                                    });
+                                    const data = await res.json();
+                                    if (data.success) {
+                                        this.helpfulCount = data.helpful_count;
+                                        this.voted = true;
+                                        window.dispatchEvent(new CustomEvent('notify', {
+                                            detail: { title: 'Helpful Vote', message: data.message, type: 'success' }
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error(e);
+                                } finally {
+                                    this.voting = false;
+                                }
+                            }
+                        }">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2.5 rtl:space-x-reverse">
+                                <div class="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 flex items-center justify-center text-[11px] font-bold text-zinc-700 dark:text-zinc-300">
+                                    {{ strtoupper(substr($review->user->name ?? 'Reader', 0, 1)) }}
+                                </div>
+                                <div>
+                                    <span class="font-medium text-xs text-zinc-900 dark:text-white">{{ $review->user->name ?? 'Reader' }}</span>
+                                    <span class="text-[11px] text-zinc-400 font-mono ml-1.5 rtl:ml-0 rtl:mr-1.5">• {{ $review->created_at->diffForHumans() }}</span>
+                                </div>
+
+                                @if ($review->is_verified_purchase)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                        ✓ Verified Buyer
+                                    </span>
+                                @endif
+                            </div>
+
+                            {{-- Star Rating --}}
+                            <div class="flex items-center space-x-1 rtl:space-x-reverse text-amber-500">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <svg class="w-3.5 h-3.5 {{ $i <= $review->rating ? 'fill-current' : 'text-zinc-300 dark:text-zinc-700 fill-current' }}" viewBox="0 0 20 20">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                    </svg>
+                                @endfor
+                            </div>
+                        </div>
+
+                        @if ($review->title)
+                            <h4 class="font-serif font-bold text-sm text-zinc-900 dark:text-white">
+                                {{ $review->title }}
+                            </h4>
+                        @endif
+
+                        <p class="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed whitespace-pre-line">
+                            {{ $review->comment }}
+                        </p>
+
+                        <div class="pt-2 flex items-center justify-between text-xs text-zinc-400">
+                            <button type="button" @click="voteHelpful()" :disabled="voting || voted"
+                                class="inline-flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
+                                :class="voted ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''">
+                                <span>👍 Helpful</span>
+                                <span class="font-mono" x-text="`(${helpfulCount})`"></span>
+                            </button>
+                        </div>
+                    </div>
+                @empty
+                    <div class="py-10 text-center text-xs text-zinc-400">
+                        <p class="mb-2">No reader reviews recorded for this volume yet.</p>
+                        <p class="text-[11px] text-zinc-500">Be the first to share an authentic critique of this edition.</p>
+                    </div>
+                @endforelse
+            </div>
+        </div>
+
+        {{-- Related Volumes Grid --}}
+        @if ($relatedBooks->isNotEmpty())
+            <div class="mt-12">
+                <div class="mb-6">
+                    <span class="text-xs uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Complementary Works</span>
+                    <h2 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">More in {{ $book->category->name }}</h2>
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    @foreach ($relatedBooks as $relatedBook)
+                        @include('partials._book_card', ['book' => $relatedBook])
+                    @endforeach
+                </div>
+            </div>
+        @endif
     </div>
 </x-app-layout>

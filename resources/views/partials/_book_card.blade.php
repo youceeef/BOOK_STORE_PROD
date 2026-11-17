@@ -96,9 +96,23 @@
                 </h3>
             </a>
 
-            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-3 truncate">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-2 truncate">
                 {{ $book->author }}
             </p>
+
+            @php
+                $cardAvg = $book->reviews_avg_rating ?? ($book->relationLoaded('reviews') ? $book->reviews->avg('rating') : null);
+                $cardCount = $book->reviews_count ?? ($book->relationLoaded('reviews') ? $book->reviews->count() : 0);
+            @endphp
+            @if ($cardCount > 0 && $cardAvg)
+                <div class="flex items-center space-x-1 rtl:space-x-reverse text-xs mb-3 text-amber-500">
+                    <span class="text-[11px]">★</span>
+                    <span class="font-medium text-xs text-zinc-800 dark:text-zinc-200">{{ number_format($cardAvg, 1) }}</span>
+                    <span class="text-[11px] text-zinc-400">({{ $cardCount }})</span>
+                </div>
+            @else
+                <div class="mb-3"></div>
+            @endif
 
             <div class="flex items-baseline justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
                 <span class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">

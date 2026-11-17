@@ -73,4 +73,24 @@ class User extends Authenticatable // implements MustVerifyEmail (optional)
     {
         return $this->wishlists()->where('book_id', $bookId)->exists();
     }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function hasReviewed(Book $book): bool
+    {
+        return $this->reviews()->where('book_id', $book->id)->exists();
+    }
+
+    public function hasPurchased(Book $book): bool
+    {
+        return $this->orders()
+            ->whereIn('status', ['paid', 'completed'])
+            ->whereHas('items', function ($query) use ($book) {
+                $query->where('book_id', $book->id);
+            })
+            ->exists();
+    }
 }

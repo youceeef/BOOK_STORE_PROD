@@ -14,7 +14,10 @@ class BookController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = Book::query()->with('category');
+        $query = Book::query()
+            ->with('category')
+            ->withAvg('reviews', 'rating')
+            ->withCount('reviews');
 
         $searchTerm = $request->input('search');
         $selectedCategory = $request->input('category');
@@ -67,11 +70,17 @@ class BookController extends Controller
     }
 
     /**
-     * Display the specified book with related recommendations.
+     * Display the specified book with related recommendations and verified reader reviews.
      */
     public function show(Book $book): View
     {
-        $book->load('category');
+        $book->load(['category', 'reviews.user']);
+
+        $userReview = auth()->check() ? $book->reviews->where('user_id', auth()->id())->first() : null;
+        $isVerifiedBuyer = auth()->check() ? auth()->user()->hasPurchased($book) : false;
+        $ratingBreakdown = $book->ratingBreakdown();
+        $averageRating = $book->averageRating();
+        $reviewsCount = $book->reviewsCount();
 
         $relatedBooks = Book::with('category')
             ->where('category_id', $book->category_id)
@@ -80,6 +89,14 @@ class BookController extends Controller
             ->take(4)
             ->get();
 
-        return view('books.show', compact('book', 'relatedBooks'));
+        return view('books.show', compact(
+            'book',
+            'relatedBooks',
+            'userReview',
+            'isVerifiedBuyer',
+            'ratingBreakdown',
+            'averageRating',
+            'reviewsCount'
+        ));
     }
 }
