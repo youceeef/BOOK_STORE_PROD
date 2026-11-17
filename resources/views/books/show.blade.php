@@ -174,11 +174,112 @@
                                             </span>
                                         </template>
                                     </button>
+
+                                    {{-- Wishlist Toggle Button --}}
+                                    @php
+                                        $isWishlistedShow = $book->isWishlistedBy(Auth::user());
+                                    @endphp
+                                    <div x-data="{
+                                        saved: {{ $isWishlistedShow ? 'true' : 'false' }},
+                                        toggling: false,
+                                        async toggleWishlist() {
+                                            if (this.toggling) return;
+                                            this.toggling = true;
+                                            try {
+                                                const res = await fetch('{{ route('wishlist.toggle') }}', {
+                                                    method: 'POST',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Accept': 'application/json',
+                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                    },
+                                                    body: JSON.stringify({ book_id: {{ $book->id }} })
+                                                });
+                                                const data = await res.json();
+                                                if (data.success) {
+                                                    this.saved = data.attached;
+                                                    window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: { count: data.wishlistCount } }));
+                                                    window.dispatchEvent(new CustomEvent('notify', {
+                                                        detail: {
+                                                            title: this.saved ? '{{ __('Saved to Wishlist') }}' : '{{ __('Removed') }}',
+                                                            message: data.message,
+                                                            type: this.saved ? 'success' : 'info'
+                                                        }
+                                                    }));
+                                                }
+                                            } catch (e) {
+                                                console.error(e);
+                                            } finally {
+                                                this.toggling = false;
+                                            }
+                                        }
+                                    }">
+                                        <button type="button" @click="toggleWishlist()" :disabled="toggling"
+                                            class="h-10 px-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#12131a] hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition flex items-center justify-center space-x-1.5 rtl:space-x-reverse"
+                                            :title="saved ? '{{ __('Remove from Saved') }}' : '{{ __('Save Volume') }}'">
+                                            <svg class="w-4 h-4 transition-transform active:scale-125" :class="saved ? 'text-rose-500 fill-current' : 'text-zinc-400 fill-none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                            </svg>
+                                            <span x-text="saved ? '{{ __('Saved') }}' : '{{ __('Save') }}'"></span>
+                                        </button>
+                                    </div>
                                 </div>
                             </form>
                         @else
-                            <div class="p-3 rounded-md bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-center">
-                                <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">This volume is currently out of stock.</p>
+                            <div class="space-y-3">
+                                <div class="p-3 rounded-md bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-center">
+                                    <p class="text-xs font-medium text-zinc-500 dark:text-zinc-400">{{ __('This volume is currently out of stock.') }}</p>
+                                </div>
+
+                                {{-- Wishlist Toggle even when out of stock --}}
+                                @php
+                                    $isWishlistedShow = $book->isWishlistedBy(Auth::user());
+                                @endphp
+                                <div x-data="{
+                                    saved: {{ $isWishlistedShow ? 'true' : 'false' }},
+                                    toggling: false,
+                                    async toggleWishlist() {
+                                        if (this.toggling) return;
+                                        this.toggling = true;
+                                        try {
+                                            const res = await fetch('{{ route('wishlist.toggle') }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Accept': 'application/json',
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                },
+                                                body: JSON.stringify({ book_id: {{ $book->id }} })
+                                            });
+                                            const data = await res.json();
+                                            if (data.success) {
+                                                this.saved = data.attached;
+                                                window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: { count: data.wishlistCount } }));
+                                                window.dispatchEvent(new CustomEvent('notify', {
+                                                    detail: {
+                                                        title: this.saved ? '{{ __('Saved to Wishlist') }}' : '{{ __('Removed') }}',
+                                                        message: data.message,
+                                                        type: this.saved ? 'success' : 'info'
+                                                    }
+                                                }));
+                                            }
+                                        } catch (e) {
+                                            console.error(e);
+                                        } finally {
+                                            this.toggling = false;
+                                        }
+                                    }
+                                }">
+                                    <button type="button" @click="toggleWishlist()" :disabled="toggling"
+                                        class="w-full py-2.5 px-4 rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#12131a] hover:bg-zinc-50 dark:hover:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition flex items-center justify-center space-x-1.5 rtl:space-x-reverse">
+                                        <svg class="w-4 h-4 transition-transform active:scale-125" :class="saved ? 'text-rose-500 fill-current' : 'text-zinc-400 fill-none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                        <span x-text="saved ? '{{ __('Saved in Wishlist') }}' : '{{ __('Save to Wishlist for Restock') }}'"></span>
+                                    </button>
+                                </div>
                             </div>
                         @endif
 

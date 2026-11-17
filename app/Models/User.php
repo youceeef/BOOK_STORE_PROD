@@ -49,4 +49,28 @@ class User extends Authenticatable // implements MustVerifyEmail (optional)
     {
         return $this->hasMany(Order::class);
     }
+
+    /**
+     * Wishlist entries for the user.
+     */
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
+     * The books saved by this user.
+     */
+    public function wishlistBooks()
+    {
+        return $this->belongsToMany(Book::class, 'wishlists')->withTimestamps();
+    }
+
+    /**
+     * Check if a specific book is in the user's wishlist.
+     */
+    public function hasInWishlist(int|string $bookId): bool
+    {
+        return $this->wishlists()->where('book_id', $bookId)->exists();
+    }
 }

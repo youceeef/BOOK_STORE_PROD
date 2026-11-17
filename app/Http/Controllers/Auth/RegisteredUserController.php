@@ -46,6 +46,9 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Synchronize guest session wishlist to newly registered account
+        app(\App\Services\WishlistService::class)->syncGuestWishlist($user);
+
         return redirect(RouteServiceProvider::HOME);
     }
 }

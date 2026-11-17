@@ -38,6 +38,21 @@ class Book extends Model
         return $this->hasMany(OrderItem::class);
     }
 
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    public function isWishlistedBy(?User $user = null): bool
+    {
+        if ($user) {
+            return $this->wishlists()->where('user_id', $user->id)->exists();
+        }
+
+        $guestWishlist = session('guest_wishlist', []);
+        return in_array($this->id, $guestWishlist);
+    }
+
     public function getInStockAttribute(): bool
     {
         return $this->stock > 0;

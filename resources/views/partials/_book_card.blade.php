@@ -4,14 +4,66 @@
 <div class="group bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition flex flex-col justify-between overflow-hidden">
     <div>
         {{-- Cover Presentation: Clean frame, unoccluded artwork --}}
-        <a href="{{ route('books.show', $book->slug) }}" class="block relative aspect-[3/4] bg-zinc-100/70 dark:bg-zinc-900/50 p-5 overflow-hidden">
-            <div class="w-full h-full flex items-center justify-center">
+        <div class="block relative aspect-[3/4] bg-zinc-100/70 dark:bg-zinc-900/50 p-5 overflow-hidden">
+            <a href="{{ route('books.show', $book->slug) }}" class="w-full h-full flex items-center justify-center">
                 <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
                     alt="{{ $book->title }}"
                     loading="lazy"
                     class="max-h-full max-w-full object-contain shadow-sm group-hover:scale-[1.02] transition-transform duration-300">
+            </a>
+
+            {{-- Wishlist Heart Button --}}
+            @php
+                $isWishlisted = $book->isWishlistedBy(Auth::user());
+            @endphp
+            <div class="absolute top-2.5 right-2.5 rtl:right-auto rtl:left-2.5 z-10"
+                x-data="{
+                    saved: {{ $isWishlisted ? 'true' : 'false' }},
+                    toggling: false,
+                    async toggleWishlist() {
+                        if (this.toggling) return;
+                        this.toggling = true;
+                        try {
+                            const res = await fetch('{{ route('wishlist.toggle') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ book_id: {{ $book->id }} })
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                this.saved = data.attached;
+                                window.dispatchEvent(new CustomEvent('wishlist-updated', { detail: { count: data.wishlistCount } }));
+                                window.dispatchEvent(new CustomEvent('notify', {
+                                    detail: {
+                                        title: this.saved ? '{{ __('Saved to Wishlist') }}' : '{{ __('Removed') }}',
+                                        message: data.message,
+                                        type: this.saved ? 'success' : 'info'
+                                    }
+                                }));
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        } finally {
+                            this.toggling = false;
+                        }
+                    }
+                }">
+                <button type="button"
+                    @click="toggleWishlist()"
+                    :disabled="toggling"
+                    title="{{ __('Save volume') }}"
+                    class="w-7 h-7 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-center text-zinc-400 hover:text-rose-500 hover:border-rose-300 transition shadow-xs focus:outline-none">
+                    <svg class="w-3.5 h-3.5 transition-transform active:scale-125" :class="saved ? 'text-rose-500 fill-current' : 'text-zinc-400 hover:text-rose-500 fill-none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                </button>
             </div>
-        </a>
+        </div>
 
         {{-- Book Metadata --}}
         <div class="p-4 flex flex-col">

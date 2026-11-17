@@ -15,6 +15,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\WishlistController;
 use App\Http\Controllers\Admin\CouponController as AdminCouponController; // Import
 use App\Http\Controllers\CouponController;
 
@@ -47,8 +48,14 @@ Route::prefix('cart')->name('cart.')->group(function () {
     Route::patch('/update/{rowId}', [CartController::class, 'update'])->name('update');   // Update item quantity
     Route::delete('/remove/{rowId}', [CartController::class, 'destroy'])->name('destroy'); // Remove item
     Route::post('/clear', [CartController::class, 'clear'])->name('clear');       // Clear entire cart
+});
 
-
+// Saved Volumes / Wishlist Routes (Guest session supported, auto-syncs on login)
+Route::prefix('wishlist')->name('wishlist.')->group(function () {
+    Route::get('/', [WishlistController::class, 'index'])->name('index');
+    Route::post('/toggle', [WishlistController::class, 'toggle'])->name('toggle');
+    Route::delete('/{book}', [WishlistController::class, 'destroy'])->name('destroy');
+    Route::post('/{book}/move-to-bag', [WishlistController::class, 'moveToBag'])->name('move-to-bag');
 });
 
 Route::post('/coupon', [CouponController::class, 'store'])

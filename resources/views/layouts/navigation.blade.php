@@ -158,6 +158,27 @@
                     </svg>
                 </button>
 
+                @php
+                    $wishlistCountGlobal = app(\App\Services\WishlistService::class)->getWishlistCount(Auth::user());
+                @endphp
+
+                {{-- Wishlist / Saved Volumes Icon --}}
+                <div class="relative" x-data="{ count: {{ $wishlistCountGlobal }} }" @wishlist-updated.window="count = $event.detail.count">
+                    <a href="{{ route('wishlist.index') }}"
+                        title="{{ __('Saved Volumes') }}"
+                        class="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition flex items-center justify-center relative">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                        <span x-show="count > 0" x-text="count"
+                            class="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center px-1 text-[10px] font-bold text-white bg-rose-600 rounded-full min-w-[18px] h-[18px]"
+                            style="{{ ($wishlistCountGlobal > 0) ? '' : 'display: none;' }}">
+                            {{ $wishlistCountGlobal }}
+                        </span>
+                    </a>
+                </div>
+
                 {{-- Shopping Bag: Architectural icon with crisp counter --}}
                 <div class="relative" x-data="{ count: {{ $cartCountGlobal ?? 0 }} }" @cart-updated.window="count = $event.detail.count">
                     <a href="{{ route('cart.index') }}"
@@ -242,6 +263,20 @@
                     </svg>
                 </button>
 
+                {{-- Mobile Wishlist Icon --}}
+                <a href="{{ route('wishlist.index') }}" class="relative p-2 text-zinc-600 dark:text-zinc-400"
+                    x-data="{ count: {{ $wishlistCountGlobal ?? 0 }} }" @wishlist-updated.window="count = $event.detail.count">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                    <span x-show="count > 0" x-text="count"
+                        class="absolute top-1 right-1 inline-flex items-center justify-center px-1 text-[10px] font-bold text-white bg-rose-600 rounded-full min-w-[16px] h-[16px]"
+                        style="{{ (isset($wishlistCountGlobal) && $wishlistCountGlobal > 0) ? '' : 'display: none;' }}">
+                        {{ $wishlistCountGlobal ?? '' }}
+                    </span>
+                </a>
+
                 <a href="{{ route('cart.index') }}" class="relative p-2 text-zinc-600 dark:text-zinc-400"
                     x-data="{ count: {{ $cartCountGlobal ?? 0 }} }" @cart-updated.window="count = $event.detail.count">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,6 +322,11 @@
         <div class="space-y-1 text-sm font-medium">
             <a href="{{ route('books.index') }}" class="block px-2 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                 {{ __('Explore Books') }}
+            </a>
+            <a href="{{ route('wishlist.index') }}" class="flex items-center justify-between px-2 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                <span>{{ __('Saved Volumes') }}</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-bold"
+                    x-data="{ count: {{ $wishlistCountGlobal ?? 0 }} }" @wishlist-updated.window="count = $event.detail.count" x-text="count"></span>
             </a>
             @auth
                 <a href="{{ route('orders.index') }}" class="block px-2 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">

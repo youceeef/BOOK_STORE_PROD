@@ -27,6 +27,9 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        // Synchronize guest session wishlist to authenticated account
+        app(\App\Services\WishlistService::class)->syncGuestWishlist($request->user());
+
         $request->session()->regenerate();
 
         return redirect()->intended(RouteServiceProvider::HOME);
