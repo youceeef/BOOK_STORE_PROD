@@ -19,6 +19,7 @@ use App\Models\Order;
 use App\Models\Book;
 use App\Models\OrderItem;
 use App\Models\Coupon; // <-- Import Coupon model
+use App\Services\StockReservationService;
 
 class WebhookController extends CashierController
 {
@@ -64,9 +65,9 @@ class WebhookController extends CashierController
             }
             Log::info("Webhook: [{$paymentIntentId}] - Found User ID: {$user->id}");
 
-            // --- Step 2: Check for Existing Order (Idempotency) ---
+            // --- Step 2: Check for Existing Order (Idempotency with Lock) ---
             Log::info("Webhook: [{$paymentIntentId}] - Checking for existing order...");
-            $existingOrder = Order::where('stripe_payment_intent_id', $paymentIntentId)->first();
+            $existingOrder = Order::where('stripe_payment_intent_id', $paymentIntentId)->lockForUpdate()->first();
             if ($existingOrder) {
                 Log::warning("Webhook Warning: [{$paymentIntentId}] - Order ID {$existingOrder->id} already exists. Skipping creation.");
                 DB::commit(); // Commit empty transaction
@@ -160,7 +161,7 @@ class WebhookController extends CashierController
 
                 Log::info("Webhook: [{$paymentIntentId}] - Processing Item - Book ID: {$bookId}, Qty: {$quantity}");
 
-                $book = Book::find($bookId);
+                $book = Book::where('id', $bookId)->lockForUpdate()->first();
                 if (!$book) {
                     throw new Exception("Book ID {$bookId} not found during order processing (Order ID: {$order->id}).");
                 }
@@ -186,13 +187,18 @@ class WebhookController extends CashierController
             }
             Log::info("Webhook: [{$paymentIntentId}] - Finished processing order items loop.");
 
+            // Release active stock holds for the user
+            StockReservationService::releaseHolds($user->id);
 
             // --- Step 5.5: Increment Coupon Usage Count (If Applicable) --- <<<< INSERTED BLOCK >>>>
             // --- Do this AFTER order items are processed but BEFORE commit ---
             if ($couponModel) { // Check if we successfully found a valid coupon earlier ($couponModel from Step 3.5)
                 Log::info("Webhook: [{$paymentIntentId}] - Attempting to increment usage count for Coupon ID: {$couponModel->id} (Code: {$couponCode})...");
                 try {
-                    $couponModel->increment('usage_count'); // Atomically increments the count
+                    $lockedCoupon = Coupon::where('id', $couponModel->id)->lockForUpdate()->first();
+                    if ($lockedCoupon) {
+                        $lockedCoupon->increment('usage_count');
+                    }
                     Log::info("Webhook: [{$paymentIntentId}] - Incremented usage count for Coupon ID: {$couponModel->id} successfully.");
                 } catch (Exception $couponEx) {
                     Log::critical("Webhook CRITICAL: [{$paymentIntentId}] - FAILED to increment usage count for Coupon ID: {$couponModel->id}. Error: " . $couponEx->getMessage());

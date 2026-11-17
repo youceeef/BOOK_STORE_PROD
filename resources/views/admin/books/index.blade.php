@@ -71,11 +71,11 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs space-x-1.5 rtl:space-x-reverse">
-                                    <a href="{{ route('admin.books.edit', $book->id) }}"
+                                    <a href="{{ route('admin.books.edit', $book) }}"
                                         class="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
                                         Edit
                                     </a>
-                                    <form action="{{ route('admin.books.destroy', $book->id) }}" method="POST" class="inline-block"
+                                    <form action="{{ route('admin.books.destroy', $book) }}" method="POST" class="inline-block"
                                         onsubmit="return confirm('Are you sure you want to permanently delete this volume?');">
                                         @csrf
                                         @method('DELETE')

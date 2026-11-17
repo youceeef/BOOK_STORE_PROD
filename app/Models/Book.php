@@ -34,6 +34,26 @@ class Book extends Model
         return 'slug';
     }
 
+    /**
+     * Retrieve the model for a bound route value.
+     * Supports both slug (e.g. /books/the-great-gatsby) and numeric ID (e.g. /admin/books/21/edit).
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if ($field) {
+            return $this->where($field, $value)->firstOrFail();
+        }
+
+        if (is_numeric($value)) {
+            $book = $this->where('id', $value)->first();
+            if ($book) {
+                return $book;
+            }
+        }
+
+        return $this->where('slug', $value)->firstOrFail();
+    }
+
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
@@ -100,5 +120,15 @@ class Book extends Model
     {
         $words = str_word_count(strip_tags($this->sample_excerpt ?? ''));
         return max(1, (int) ceil($words / 200));
+    }
+
+    public function reservations(): HasMany
+    {
+        return $this->hasMany(StockReservation::class);
+    }
+
+    public function availableStock(?string $sessionId = null, ?int $userId = null): int
+    {
+        return \App\Services\StockReservationService::getAvailableStock($this, $sessionId, $userId);
     }
 }

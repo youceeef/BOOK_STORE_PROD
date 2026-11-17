@@ -90,4 +90,58 @@ class AdminDashboardTest extends TestCase
         $response->assertSee('Meditations');
         $response->assertSee('3 left');
     }
+
+    public function test_admin_can_access_book_edit_page_by_numeric_id(): void
+    {
+        $this->actingAs($this->adminUser);
+
+        $category = Category::create([
+            'name' => 'Fiction',
+            'slug' => 'fiction',
+            'is_active' => true,
+        ]);
+
+        $book = Book::create([
+            'category_id' => $category->id,
+            'title' => 'To Kill a Mockingbird',
+            'slug' => 'to-kill-a-mockingbird',
+            'author' => 'Harper Lee',
+            'price' => 14.99,
+            'stock' => 12,
+        ]);
+
+        // Explicitly test route resolution with numeric ID: /admin/books/{id}/edit
+        $response = $this->get('/admin/books/' . $book->id . '/edit');
+
+        $response->assertOk();
+        $response->assertSee('Edit: To Kill a Mockingbird');
+        $response->assertSee('Harper Lee');
+    }
+
+    public function test_admin_can_access_book_edit_page_by_slug(): void
+    {
+        $this->actingAs($this->adminUser);
+
+        $category = Category::create([
+            'name' => 'History',
+            'slug' => 'history',
+            'is_active' => true,
+        ]);
+
+        $book = Book::create([
+            'category_id' => $category->id,
+            'title' => 'Sapiens',
+            'slug' => 'sapiens',
+            'author' => 'Yuval Noah Harari',
+            'price' => 22.00,
+            'stock' => 8,
+        ]);
+
+        // Explicitly test route resolution with slug: /admin/books/{slug}/edit
+        $response = $this->get('/admin/books/' . $book->slug . '/edit');
+
+        $response->assertOk();
+        $response->assertSee('Edit: Sapiens');
+        $response->assertSee('Yuval Noah Harari');
+    }
 }

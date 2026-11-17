@@ -14,7 +14,7 @@
 
     <div class="max-w-4xl mx-auto">
         <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8">
-            <form method="POST" action="{{ route('admin.books.update', $book->id) }}" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('admin.books.update', $book) }}" enctype="multipart/form-data">
                 @method('PUT')
                 @include('admin.books._form')
             </form>

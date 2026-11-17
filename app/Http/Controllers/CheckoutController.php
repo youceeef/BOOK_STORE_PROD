@@ -10,6 +10,7 @@ use Laravel\Cashier\Exceptions\IncompletePayment; // Cashier exception for SCA
 use App\Models\Order; // Eloquent models
 use App\Models\Book;
 use App\Models\Coupon; // Import Coupon model
+use App\Services\StockReservationService; // Stock reservation and concurrency service
 use Exception; // Base PHP exception
 use Illuminate\Support\Facades\Log; // Logging facade
 use Illuminate\Support\Facades\DB; // Database facade (optional, if needed elsewhere)
@@ -32,6 +33,12 @@ class CheckoutController extends Controller
         // Redirect if cart is empty
         if ($cartItems->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
+        }
+
+        // Concurrency Safety: Reserve inventory for 15 minutes with pessimistic row locking
+        $reservation = StockReservationService::reserveCart($user, $cartItems, session()->getId(), 15);
+        if (!$reservation['success']) {
+            return redirect()->route('cart.index')->with('error', $reservation['error']);
         }
 
         $cartSubtotal = Cart::getSubTotal(false); // Use subtotal before discount
@@ -145,6 +152,28 @@ class CheckoutController extends Controller
         Log::info("Checkout Process: Final total: {$finalTotal}. Amount for Stripe (cents): {$amountInCents}");
         // --- End Calculation ---
 
+        $cartItemsCollection = Cart::getContent();
+
+        // --- Concurrency Safety: Pre-Charge Pessimistic Lock & Availability Verification ---
+        $stockCheck = DB::transaction(function () use ($cartItemsCollection) {
+            foreach ($cartItemsCollection as $cartItem) {
+                $book = Book::where('id', $cartItem->id)->lockForUpdate()->first();
+                if (!$book || $book->stock < $cartItem->quantity) {
+                    $available = $book ? $book->stock : 0;
+                    return [
+                        'valid' => false,
+                        'message' => $available === 0
+                            ? "Sorry, '{$cartItem->name}' is now out of stock."
+                            : "Only {$available} copies of '{$cartItem->name}' remain in stock.",
+                    ];
+                }
+            }
+            return ['valid' => true, 'message' => null];
+        });
+
+        if (!$stockCheck['valid']) {
+            return redirect()->route('cart.index')->with('error', $stockCheck['message']);
+        }
 
         // --- Database/Stripe Operations ---
         try {
@@ -186,8 +215,8 @@ class CheckoutController extends Controller
             ]);
 
             DB::transaction(function () use ($user, $finalTotal, $paymentIntentId, $shippingAddress, $cartItemsCollection, $couponModel, $couponCode, $discount) {
-                // Check if already created (idempotency guard)
-                $order = Order::where('stripe_payment_intent_id', $paymentIntentId)->first();
+                // Check if already created (idempotency guard with exclusive lock)
+                $order = Order::where('stripe_payment_intent_id', $paymentIntentId)->lockForUpdate()->first();
                 if (!$order) {
                     $order = Order::create([
                         'user_id' => $user->id,
@@ -207,16 +236,22 @@ class CheckoutController extends Controller
                             'price' => $cartItem->price,
                         ]);
 
-                        // Decrement inventory stock
-                        $book = Book::find($cartItem->id);
+                        // Decrement inventory stock with exclusive row lock
+                        $book = Book::where('id', $cartItem->id)->lockForUpdate()->first();
                         if ($book && $book->stock > 0) {
                             $book->decrement('stock', min($book->stock, $cartItem->quantity));
                         }
                     }
 
                     if ($couponModel) {
-                        $couponModel->increment('usage_count');
+                        $lockedCoupon = Coupon::where('id', $couponModel->id)->lockForUpdate()->first();
+                        if ($lockedCoupon) {
+                            $lockedCoupon->increment('usage_count');
+                        }
                     }
+
+                    // Release temporary stock holds for this session
+                    StockReservationService::releaseHolds($user->id, session()->getId());
                 }
             });
 
@@ -265,6 +300,9 @@ class CheckoutController extends Controller
      */
     public function cancel(): View
     {
+        if (Auth::check()) {
+            StockReservationService::releaseHolds(Auth::id(), session()->getId());
+        }
         return view('checkout.cancel');
     }
 }
