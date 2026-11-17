@@ -34,6 +34,34 @@
     <!-- Main Navigation -->
     @include('layouts.navigation')
 
+    {{-- Unverified Email Verification Prompt Shield --}}
+    @auth
+        @if (!auth()->user()->hasVerifiedEmail())
+            <div class="bg-amber-50 dark:bg-amber-950/40 border-b border-amber-200 dark:border-amber-800/80 px-4 py-2 text-xs text-amber-900 dark:text-amber-200">
+                <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                        <span class="w-4 h-4 rounded-full bg-amber-200 dark:bg-amber-900 text-amber-800 dark:text-amber-200 flex items-center justify-center font-bold text-[10px] shrink-0">!</span>
+                        <span>
+                            Please confirm your email address (<strong>{{ auth()->user()->email }}</strong>) to unlock checkout and order history.
+                        </span>
+                    </div>
+                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <form method="POST" action="{{ route('verification.send') }}" class="inline">
+                            @csrf
+                            <button type="submit" class="underline font-semibold hover:text-amber-950 dark:hover:text-white transition">
+                                Resend Email
+                            </button>
+                        </form>
+                        <span>&bull;</span>
+                        <a href="{{ route('verification.notice') }}" class="underline font-semibold hover:text-amber-950 dark:hover:text-white transition">
+                            Verify Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endauth
+
     <!-- Optional Page Heading -->
     @if (isset($header))
         <header class="bg-zinc-50 dark:bg-[#0e0f15] border-b border-zinc-200 dark:border-zinc-800 transition-colors">

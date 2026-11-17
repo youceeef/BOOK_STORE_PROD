@@ -102,6 +102,11 @@
             @include('profile.partials.update-password-form')
         </div>
 
+        {{-- Browser Sessions & Device Security --}}
+        <div class="bg-white dark:bg-[#12131a] rounded-lg p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-xs">
+            @include('profile.partials.logout-other-browser-sessions-form')
+        </div>
+
         {{-- Danger Zone (Account Deletion) --}}
         <div class="bg-white dark:bg-[#12131a] rounded-lg p-6 sm:p-8 border border-zinc-200 dark:border-zinc-800 shadow-xs">
             @include('profile.partials.delete-user-form')

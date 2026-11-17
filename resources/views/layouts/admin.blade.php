@@ -97,6 +97,15 @@
                     </svg>
                     <span>Coupons & Discounts</span>
                 </a>
+
+                {{-- Mailbox Inspector --}}
+                <a href="{{ route('admin.mailbox.index') }}"
+                    class="flex items-center px-3 py-2 rounded-md text-xs font-medium transition {{ request()->routeIs('admin.mailbox.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                    <svg class="w-4 h-4 mr-2.5 rtl:mr-0 rtl:ml-2.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span>Mailbox Inspector</span>
+                </a>
             </nav>
 
             <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">

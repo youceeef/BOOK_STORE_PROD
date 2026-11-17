@@ -167,4 +167,23 @@ class ProfileTest extends TestCase
         $this->assertNull($user->avatar_url);
         Storage::disk('public')->assertMissing('avatars/sample.jpg');
     }
+
+    public function test_user_can_logout_other_browser_sessions(): void
+    {
+        $user = User::factory()->create([
+            'password' => bcrypt('secret-password-123'),
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->post('/profile/logout-other-devices', [
+                'password' => 'secret-password-123',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/profile');
+
+        $response->assertSessionHas('status', 'other-sessions-terminated');
+    }
 }

@@ -86,6 +86,7 @@ Route::middleware(['auth', 'verified'])->group(function () { // 'verified' is op
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/logout-other-devices', [ProfileController::class, 'logoutOtherDevices'])->name('profile.logout-other-devices');
 
     // Checkout Process
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
@@ -123,6 +124,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Coupon management
     Route::resource('coupons', AdminCouponController::class)->except(['show']);
+
+    // Transactional Mailbox Inspector (Dev & Sandbox)
+    Route::get('/mailbox', [\App\Http\Controllers\Admin\AdminMailboxController::class, 'index'])->name('mailbox.index');
+    Route::delete('/mailbox', [\App\Http\Controllers\Admin\AdminMailboxController::class, 'clear'])->name('mailbox.clear');
 
 
 });

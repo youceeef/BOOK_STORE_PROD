@@ -86,4 +86,18 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    /**
+     * Log out from other browser sessions across all devices.
+     */
+    public function logoutOtherDevices(Request $request): RedirectResponse
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        Auth::logoutOtherDevices($request->password);
+
+        return Redirect::route('profile.edit')->with('status', 'other-sessions-terminated');
+    }
 }

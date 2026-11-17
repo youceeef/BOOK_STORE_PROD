@@ -2,17 +2,17 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail; // Keep if you require email verification
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use Laravel\Cashier\Billable; // <-- Import the Billable trait
+use Laravel\Cashier\Billable;
 use Illuminate\Support\Facades\Storage;
 
-class User extends Authenticatable // implements MustVerifyEmail (optional)
+class User extends Authenticatable implements MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, Billable; // <-- Add Billable here
+    use HasApiTokens, HasFactory, Notifiable, Billable;
 
     /**
      * The attributes that are mass assignable.
@@ -134,5 +134,21 @@ class User extends Authenticatable // implements MustVerifyEmail (optional)
         ]);
 
         return implode(', ', $parts);
+    }
+
+    /**
+     * Send the custom editorial email verification notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new \App\Notifications\CustomVerifyEmail());
+    }
+
+    /**
+     * Send the custom editorial password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new \App\Notifications\CustomResetPassword($token));
     }
 }
