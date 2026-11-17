@@ -67,7 +67,68 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start"
+                x-data="{
+                    loading: false,
+                    async removeItem(url) {
+                        if (this.loading) return;
+                        this.loading = true;
+                        try {
+                            const res = await fetch(url, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                }
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                                window.dispatchEvent(new CustomEvent('notify', {
+                                    detail: {
+                                        type: 'info',
+                                        message: data.message || 'Volume removed from shopping bag.'
+                                    }
+                                }));
+                                setTimeout(() => window.location.reload(), 400);
+                            } else {
+                                window.location.reload();
+                            }
+                        } catch (e) {
+                            window.location.reload();
+                        }
+                    },
+                    async clearBag(url) {
+                        if (this.loading) return;
+                        this.loading = true;
+                        try {
+                            const res = await fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                }
+                            });
+                            const data = await res.json();
+                            if (data.success) {
+                                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: 0 } }));
+                                window.dispatchEvent(new CustomEvent('notify', {
+                                    detail: {
+                                        type: 'info',
+                                        message: data.message || 'Shopping bag cleared.'
+                                    }
+                                }));
+                                setTimeout(() => window.location.reload(), 400);
+                            } else {
+                                window.location.reload();
+                            }
+                        } catch (e) {
+                            window.location.reload();
+                        }
+                    }
+                }">
                 
                 {{-- Left: Cart Items List (8 cols) --}}
                 <div class="lg:col-span-8 space-y-4">
@@ -122,17 +183,13 @@
                                         </span>
                                     </div>
 
-                                    {{-- Delete Button --}}
-                                    <form action="{{ route('cart.destroy', $item->id) }}" method="POST">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                            class="p-1.5 text-zinc-400 hover:text-rose-600 transition"
-                                            title="Remove volume"
-                                            onclick="return confirm('Remove this volume from your bag?');">
-                                            ✕
-                                        </button>
-                                    </form>
+                                    {{-- Delete Button (AJAX with toast notification, zero native popups) --}}
+                                    <button type="button"
+                                        @click="removeItem('{{ route('cart.destroy', $item->id) }}')"
+                                        class="p-1.5 text-zinc-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                                        title="{{ __('Remove volume') }}">
+                                        ✕
+                                    </button>
                                 </div>
                             </div>
                         @endforeach
@@ -145,13 +202,11 @@
                             ← {{ __('Add more titles to bag') }}
                         </a>
 
-                        <form action="{{ route('cart.clear') }}" method="POST"
-                            onsubmit="return confirm('Are you sure you want to empty your entire bag?');">
-                            @csrf
-                            <button type="submit" class="text-rose-600 dark:text-rose-400 hover:underline">
-                                {{ __('Empty shopping bag') }}
-                            </button>
-                        </form>
+                        <button type="button"
+                            @click="clearBag('{{ route('cart.clear') }}')"
+                            class="text-rose-600 dark:text-rose-400 hover:underline text-xs">
+                            {{ __('Empty shopping bag') }}
+                        </button>
                     </div>
                 </div>
 

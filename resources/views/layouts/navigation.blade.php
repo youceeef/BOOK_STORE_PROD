@@ -1,17 +1,6 @@
-{{-- Announcement Bar: Clean, typographic, zero slop --}}
-<div class="bg-zinc-900 dark:bg-[#07070b] text-zinc-300 dark:text-zinc-400 text-xs py-2 px-4 border-b border-zinc-800 no-print">
-    <div class="max-w-7xl mx-auto flex items-center justify-between text-[11px] sm:text-xs">
-        <div class="flex items-center space-x-2 rtl:space-x-reverse">
-            <span class="font-medium text-zinc-400">
-                {{ __('Free Tracked Delivery') }} over $35
-            </span>
-            <span class="text-zinc-600 hidden sm:inline">•</span>
-            <span class="text-zinc-400 hidden sm:inline">Use code <strong class="text-zinc-100 font-mono">WELCOME10</strong> for 10% off</span>
-        </div>
-        <div class="flex items-center space-x-4 rtl:space-x-reverse">
-            <span class="font-serif italic text-zinc-400 hidden md:inline">Curated Editions & Rare Finds</span>
-        </div>
-    </div>
+{{-- Announcement Bar: Quiet single-line literary strip --}}
+<div class="bg-zinc-950 text-zinc-400 text-[11px] py-1.5 px-4 border-b border-zinc-800 text-center font-normal no-print">
+    <span>{{ __('Free Delivery on orders over $35') }} — {{ __('Curated Editions & Rare Finds') }}</span>
 </div>
 
 {{-- Main Navigation Bar: Slim 64px, architectural, crisp borders --}}

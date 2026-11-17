@@ -2,104 +2,104 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <span class="text-xs uppercase font-semibold tracking-wider text-gold-600 block mb-0.5">Order Invoice</span>
-                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">
-                    Order #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                <span class="text-xs uppercase font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 block mb-0.5">Order Invoice</span>
+                <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">
+                    #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                 </h1>
             </div>
-            <a href="{{ route('orders.index') }}" class="text-sm font-medium text-gray-500 hover:text-gray-900 transition">
+            <a href="{{ route('orders.index') }}" class="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
                 ← Back to Order History
             </a>
         </div>
     </x-slot>
 
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             
             {{-- Header Overview Strip --}}
-            <div class="p-6 sm:p-8 bg-[#faf9f7] border-b border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div class="p-5 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                 <div>
-                    <span class="text-gray-400 block mb-1">Order Date</span>
-                    <span class="font-semibold text-gray-900">{{ $order->created_at->format('M d, Y h:i A') }}</span>
+                    <span class="text-zinc-400 block mb-1">Order Date</span>
+                    <span class="font-medium text-zinc-900 dark:text-white">{{ $order->created_at->format('M d, Y h:i A') }}</span>
                 </div>
                 <div>
-                    <span class="text-gray-400 block mb-1">Payment Status</span>
+                    <span class="text-zinc-400 block mb-1">Payment Status</span>
                     @php
                         $statusClasses = match($order->status) {
-                            'paid', 'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                            'shipped'           => 'bg-blue-50 text-blue-700 border-blue-200',
-                            'pending'           => 'bg-amber-50 text-amber-700 border-amber-200',
-                            'failed'            => 'bg-rose-50 text-rose-700 border-rose-200',
-                            default             => 'bg-gray-50 text-gray-700 border-gray-200',
+                            'paid', 'completed' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                            'shipped'           => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+                            'pending'           => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+                            'failed'            => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+                            default             => 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800',
                         };
                     @endphp
-                    <span class="inline-block px-2 py-0.5 rounded-full font-semibold border {{ $statusClasses }}">
+                    <span class="inline-block px-2 py-0.5 rounded text-[11px] font-medium border {{ $statusClasses }}">
                         {{ ucfirst($order->status) }}
                     </span>
                 </div>
                 <div>
-                    <span class="text-gray-400 block mb-1">Total Paid</span>
-                    <span class="font-serif text-base font-bold text-gray-900">${{ number_format($order->total_amount, 2) }}</span>
+                    <span class="text-zinc-400 block mb-1">Total Paid</span>
+                    <span class="font-serif text-base font-bold text-zinc-900 dark:text-white">${{ number_format($order->total_amount, 2) }}</span>
                 </div>
                 <div>
-                    <span class="text-gray-400 block mb-1">Transaction Ref</span>
-                    <span class="font-mono text-[11px] text-gray-600 truncate block" title="{{ $order->stripe_payment_intent_id }}">
-                        {{ $order->stripe_payment_intent_id ? Str::limit($order->stripe_payment_intent_id, 12) : 'Offline/N/A' }}
+                    <span class="text-zinc-400 block mb-1">Transaction Ref</span>
+                    <span class="font-mono text-[11px] text-zinc-600 dark:text-zinc-400 truncate block" title="{{ $order->stripe_payment_intent_id }}">
+                        {{ $order->stripe_payment_intent_id ? Str::limit($order->stripe_payment_intent_id, 14) : 'Offline/N/A' }}
                     </span>
                 </div>
             </div>
 
             {{-- Items List --}}
-            <div class="p-6 sm:p-8 divide-y divide-gray-100">
-                <h2 class="font-serif text-lg font-bold text-gray-900 pb-4">Volumes Purchased</h2>
+            <div class="p-5 sm:p-6 divide-y divide-zinc-100 dark:divide-zinc-800">
+                <h2 class="font-serif text-base font-bold text-zinc-900 dark:text-white pb-3">Volumes Purchased</h2>
 
                 @foreach ($order->items as $item)
-                    <div class="py-4 flex items-center justify-between gap-4">
-                        <div class="flex items-center space-x-4">
-                            <div class="w-14 h-20 rounded-lg overflow-hidden bg-gray-50 flex-shrink-0 border border-gray-100 shadow-sm">
+                    <div class="py-3.5 flex items-center justify-between gap-4">
+                        <div class="flex items-center space-x-3.5 rtl:space-x-reverse">
+                            <div class="w-12 h-16 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 border border-zinc-200 dark:border-zinc-800 p-1 flex items-center justify-center">
                                 <img src="{{ asset($item->book?->cover_image ?: 'images/covers/default.png') }}"
                                     alt="{{ $item->book?->title ?? 'Book' }}"
-                                    class="w-full h-full object-cover">
+                                    class="max-h-full max-w-full object-contain">
                             </div>
                             <div>
-                                <h3 class="font-serif font-bold text-sm sm:text-base text-gray-900">
+                                <h3 class="font-serif font-bold text-sm text-zinc-900 dark:text-white">
                                     {{ $item->book?->title ?? 'Title no longer listed' }}
                                 </h3>
-                                <p class="text-xs text-gray-500 mt-0.5">by {{ $item->book?->author ?? 'Unknown' }}</p>
-                                <p class="text-xs text-gray-400 mt-1">Quantity: {{ $item->quantity }} × ${{ number_format($item->price, 2) }}</p>
+                                <p class="text-xs text-zinc-500 dark:text-zinc-400">by {{ $item->book?->author ?? 'Unknown' }}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Qty: {{ $item->quantity }} × ${{ number_format($item->price, 2) }}</p>
                             </div>
                         </div>
 
-                        <span class="font-serif font-bold text-base text-gray-900">
+                        <span class="font-serif font-bold text-sm text-zinc-900 dark:text-white">
                             ${{ number_format($item->price * $item->quantity, 2) }}
                         </span>
                     </div>
                 @endforeach
             </div>
 
-            {{-- Final Accounting Footer --}}
-            <div class="p-6 sm:p-8 bg-[#faf9f7] border-t border-gray-100">
-                <div class="max-w-xs ml-auto space-y-2 text-sm">
-                    <div class="flex justify-between text-gray-600">
+            {{-- Accounting Footer --}}
+            <div class="p-5 sm:p-6 bg-zinc-50 dark:bg-zinc-900/60 border-t border-zinc-200 dark:border-zinc-800">
+                <div class="max-w-xs ml-auto rtl:ml-0 rtl:mr-auto space-y-2 text-xs">
+                    <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
                         <span>Items Subtotal</span>
-                        <span class="font-medium text-gray-900">${{ number_format($order->total_amount + ($order->discount_amount ?? 0), 2) }}</span>
+                        <span class="font-medium text-zinc-900 dark:text-white">${{ number_format($order->total_amount + ($order->discount_amount ?? 0), 2) }}</span>
                     </div>
 
                     @if ($order->discount_amount > 0)
-                        <div class="flex justify-between text-emerald-600 font-medium">
+                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
                             <span>Discount ({{ $order->coupon_code }})</span>
                             <span>-${{ number_format($order->discount_amount, 2) }}</span>
                         </div>
                     @endif
 
-                    <div class="flex justify-between text-gray-600">
+                    <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
                         <span>Tracked Shipping</span>
-                        <span class="text-emerald-600 font-medium">Free</span>
+                        <span class="text-emerald-600 dark:text-emerald-400 font-medium">Free</span>
                     </div>
 
-                    <div class="border-t border-gray-200 pt-3 flex justify-between items-baseline">
-                        <span class="font-serif text-base font-bold text-gray-900">Final Total</span>
-                        <span class="font-serif text-2xl font-bold text-gray-900">
+                    <div class="border-t border-zinc-200 dark:border-zinc-700 pt-2.5 flex justify-between items-baseline">
+                        <span class="font-serif text-sm font-bold text-zinc-900 dark:text-white">Final Total</span>
+                        <span class="font-serif text-xl font-bold text-zinc-900 dark:text-white">
                             ${{ number_format($order->total_amount, 2) }}
                         </span>
                     </div>

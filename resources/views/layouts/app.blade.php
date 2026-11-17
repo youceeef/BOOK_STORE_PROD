@@ -39,25 +39,6 @@
         </header>
     @endif
 
-    <!-- Alert / Flash Messages -->
-    @if (session('success'))
-        <div class="max-w-7xl mx-auto mt-4 px-4 sm:px-6 lg:px-8">
-            <div class="p-3.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center text-xs font-medium">
-                <span class="mr-2 rtl:mr-0 rtl:ml-2 font-bold">✓</span>
-                <span>{{ session('success') }}</span>
-            </div>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="max-w-7xl mx-auto mt-4 px-4 sm:px-6 lg:px-8">
-            <div class="p-3.5 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-300 flex items-center text-xs font-medium">
-                <span class="mr-2 rtl:mr-0 rtl:ml-2 font-bold">✕</span>
-                <span>{{ session('error') }}</span>
-            </div>
-        </div>
-    @endif
-
     <!-- Page Content -->
     <main class="flex-grow">
         {{ $slot }}

@@ -97,6 +97,12 @@ class CartController extends Controller
 
         // Check stock before updating
         if ($book->stock < $request->quantity) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough stock for "' . $book->title . '". Only ' . $book->stock . ' available.'
+                ], 422);
+            }
             return redirect()->route('cart.index')
                 ->with('error', 'Not enough stock for "' . $book->title . '". Only ' . $book->stock . ' available.');
         }
@@ -108,24 +114,55 @@ class CartController extends Controller
             ],
         ]);
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Shopping bag updated.',
+                'cartCount' => Cart::getTotalQuantity(),
+                'cartTotal' => Cart::getTotal()
+            ]);
+        }
+
         return redirect()->route('cart.index')->with('success', 'Cart updated successfully.');
     }
 
     /**
      * Remove the specified item from storage.
      */
-    public function destroy(string $rowId): RedirectResponse
+    public function destroy(Request $request, string $rowId): RedirectResponse | JsonResponse
     {
         Cart::remove($rowId);
-        return redirect()->route('cart.index')->with('success', 'Item removed from cart.');
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Volume removed from shopping bag.',
+                'cartCount' => Cart::getTotalQuantity(),
+                'cartTotal' => Cart::getTotal(),
+                'isEmpty' => Cart::isEmpty()
+            ]);
+        }
+
+        return redirect()->route('cart.index')->with('success', 'Volume removed from shopping bag.');
     }
 
     /**
      * Clear the entire cart.
      */
-    public function clear(): RedirectResponse
+    public function clear(Request $request): RedirectResponse | JsonResponse
     {
         Cart::clear();
-        return redirect()->route('cart.index')->with('success', 'Cart cleared successfully.');
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Shopping bag cleared.',
+                'cartCount' => 0,
+                'cartTotal' => 0,
+                'isEmpty' => true
+            ]);
+        }
+
+        return redirect()->route('cart.index')->with('success', 'Shopping bag cleared.');
     }
 }
