@@ -56,19 +56,25 @@
 
                             <div class="sm:col-span-2">
                                 <label for="address" class="block font-medium text-zinc-700 dark:text-zinc-300 mb-1">{{ __('Delivery Address') }}</label>
-                                <input type="text" id="address" name="address" placeholder="124 Oxford Street, Flat 4B" required
+                                <input type="text" id="address" name="address"
+                                    value="{{ old('address', auth()->user()->formatted_address ?: auth()->user()->address_line1) }}"
+                                    placeholder="124 Oxford Street, Flat 4B" required
                                     class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400">
                             </div>
 
                             <div>
                                 <label for="city" class="block font-medium text-zinc-700 dark:text-zinc-300 mb-1">{{ __('City') }}</label>
-                                <input type="text" id="city" name="city" placeholder="London" required
+                                <input type="text" id="city" name="city"
+                                    value="{{ old('city', auth()->user()->city) }}"
+                                    placeholder="London" required
                                     class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400">
                             </div>
 
                             <div>
                                 <label for="postal-code" class="block font-medium text-zinc-700 dark:text-zinc-300 mb-1">{{ __('Postal Code') }}</label>
-                                <input type="text" id="postal-code" name="postal_code" placeholder="W1D 1BS" required
+                                <input type="text" id="postal-code" name="postal_code"
+                                    value="{{ old('postal_code', auth()->user()->postal_code) }}"
+                                    placeholder="W1D 1BS" required
                                     class="w-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-md px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400">
                             </div>
                         </div>

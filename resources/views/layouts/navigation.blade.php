@@ -49,7 +49,7 @@
                                 <a href="{{ route('books.index') }}"
                                     class="flex items-center justify-between px-3 py-1.5 rounded-md font-semibold text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
                                     <span>{{ __('All Categories') }}</span>
-                                    <span>→</span>
+                                    <span class="text-[11px] text-zinc-400 font-normal">View all</span>
                                 </a>
                             </div>
                             <div class="pt-1 space-y-0.5 max-h-60 overflow-y-auto">
@@ -173,9 +173,13 @@
                     <div class="relative pl-1 rtl:pl-0 rtl:pr-1" x-data="{ userOpen: false }" @click.outside="userOpen = false">
                         <button @click="userOpen = !userOpen" type="button"
                             class="flex items-center space-x-2 rtl:space-x-reverse text-xs font-medium p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition">
-                            <span class="w-6 h-6 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-[11px]">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                            </span>
+                            @if(Auth::user()->avatar_url)
+                                <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="w-6 h-6 rounded-md object-cover border border-zinc-200 dark:border-zinc-700">
+                            @else
+                                <span class="w-6 h-6 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-[11px]">
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                </span>
+                            @endif
                             <span class="text-zinc-800 dark:text-zinc-200 hidden xl:block">
                                 {{ Auth::user()->name }}
                             </span>
@@ -187,9 +191,18 @@
                             x-transition:enter-end="opacity-100 scale-100"
                             class="absolute right-0 rtl:right-auto rtl:left-0 z-50 mt-1.5 w-52 rounded-lg shadow-lg bg-white dark:bg-[#12131a] border border-zinc-200 dark:border-zinc-800 p-1.5 text-xs divide-y divide-zinc-100 dark:divide-zinc-800"
                             style="display: none;">
-                            <div class="px-2.5 py-1.5">
-                                <p class="text-[11px] text-zinc-400">Account</p>
-                                <p class="font-medium text-zinc-900 dark:text-white truncate">{{ Auth::user()->email }}</p>
+                            <div class="px-2.5 py-2 flex items-center gap-2.5">
+                                @if(Auth::user()->avatar_url)
+                                    <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="w-8 h-8 rounded-md object-cover border border-zinc-200 dark:border-zinc-700 shrink-0">
+                                @else
+                                    <span class="w-8 h-8 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shrink-0">
+                                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                    </span>
+                                @endif
+                                <div class="min-w-0">
+                                    <p class="font-medium text-zinc-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
+                                    <p class="text-[11px] text-zinc-400 truncate">{{ Auth::user()->email }}</p>
+                                </div>
                             </div>
                             <div class="py-1">
                                 <a href="{{ route('profile.edit') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
@@ -320,6 +333,19 @@
                     x-data="{ count: {{ $wishlistCountGlobal ?? 0 }} }" @wishlist-updated.window="count = $event.detail.count" x-text="count"></span>
             </a>
             @auth
+                <div class="flex items-center gap-2.5 px-2 py-2 mb-2 border-b border-zinc-100 dark:border-zinc-800">
+                    @if(Auth::user()->avatar_url)
+                        <img src="{{ Auth::user()->avatar_url }}" alt="{{ Auth::user()->name }}" class="w-8 h-8 rounded-md object-cover border border-zinc-200 dark:border-zinc-700 shrink-0">
+                    @else
+                        <span class="w-8 h-8 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center font-bold text-xs shrink-0">
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        </span>
+                    @endif
+                    <div class="min-w-0">
+                        <p class="text-xs font-semibold text-zinc-900 dark:text-white truncate">{{ Auth::user()->name }}</p>
+                        <p class="text-[11px] text-zinc-400 truncate">{{ Auth::user()->email }}</p>
+                    </div>
+                </div>
                 <a href="{{ route('orders.index') }}" class="block px-2 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                     {{ __('My Orders') }}
                 </a>

@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Laravel\Cashier\Billable; // <-- Import the Billable trait
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable // implements MustVerifyEmail (optional)
 {
@@ -22,6 +23,15 @@ class User extends Authenticatable // implements MustVerifyEmail (optional)
         'name',
         'email',
         'password',
+        'avatar',
+        'phone',
+        'bio',
+        'address_line1',
+        'address_line2',
+        'city',
+        'state',
+        'postal_code',
+        'country',
     ];
 
     /**
@@ -92,5 +102,37 @@ class User extends Authenticatable // implements MustVerifyEmail (optional)
                 $query->where('book_id', $book->id);
             })
             ->exists();
+    }
+
+    /**
+     * Resolves the public URL for the user's custom avatar or returns null.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
+            return Storage::disk('public')->url($this->avatar);
+        }
+        return null;
+    }
+
+    /**
+     * Formatted multi-part address for shipping and invoices.
+     */
+    public function getFormattedAddressAttribute(): ?string
+    {
+        if (!$this->address_line1) {
+            return null;
+        }
+
+        $parts = array_filter([
+            $this->address_line1,
+            $this->address_line2,
+            $this->city,
+            $this->state,
+            $this->postal_code,
+            $this->country,
+        ]);
+
+        return implode(', ', $parts);
     }
 }

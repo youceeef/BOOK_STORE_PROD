@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -16,8 +17,14 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): View
     {
+        $user = $request->user();
+
         return view('profile.edit', [
-            'user' => $request->user(),
+            'user' => $user,
+            'ordersCount' => $user->orders()->count(),
+            'wishlistCount' => $user->wishlists()->count(),
+            'reviewsCount' => $user->reviews()->count(),
+            'recentOrders' => $user->orders()->latest()->take(3)->get(),
         ]);
     }
 
@@ -26,13 +33,35 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Handle Avatar Removal
+        if ($request->boolean('remove_avatar') && $user->avatar) {
+            if (Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->avatar = null;
         }
 
-        $request->user()->save();
+        // Handle Avatar Upload
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        unset($validated['avatar'], $validated['remove_avatar']);
+
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
