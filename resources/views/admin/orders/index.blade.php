@@ -1,78 +1,82 @@
 <x-admin-layout>
     <x-slot name="header">
-        <div>
-            <span class="text-xs uppercase tracking-wider text-gold-600 font-bold block mb-1">Sales & Fulfillment</span>
-            <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900">Manage Orders</h1>
+        <div class="flex items-center justify-between w-full">
+            <div>
+                <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Sales & Fulfillment</span>
+                <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Customer Orders & Invoices</h1>
+            </div>
         </div>
     </x-slot>
 
-    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-100">
-                <thead class="bg-[#faf9f7]">
-                    <tr>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Order ID</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Items</th>
-                        <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Total</th>
-                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 bg-white">
-                    @forelse ($orders as $order)
-                        <tr class="hover:bg-[#faf9f7]/60 transition">
-                            <td class="px-6 py-4 whitespace-nowrap font-mono text-sm font-bold text-gray-900">
-                                #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-gray-900">{{ $order->user?->name ?? 'Guest Buyer' }}</div>
-                                <div class="text-xs text-gray-400">{{ $order->user?->email ?? 'N/A' }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
-                                {{ $order->created_at->format('M d, Y H:i') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                @php
-                                    $statusClasses = match($order->status) {
-                                        'paid', 'completed' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'shipped'           => 'bg-blue-50 text-blue-700 border-blue-200',
-                                        'pending'           => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        'failed'            => 'bg-rose-50 text-rose-700 border-rose-200',
-                                        default             => 'bg-gray-50 text-gray-700 border-gray-200',
-                                    };
-                                @endphp
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold border {{ $statusClasses }}">
-                                    {{ ucfirst($order->status) }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-600 font-medium">
-                                {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap font-serif font-bold text-sm text-gray-900">
-                                ${{ number_format($order->total_amount, 2) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-xs">
-                                <a href="{{ route('admin.orders.show', $order->id) }}"
-                                    class="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 bg-gray-50 hover:bg-gray-100 border border-gray-200 transition">
-                                    Review Order →
-                                </a>
-                            </td>
-                        </tr>
-                    @empty
+    <div class="space-y-6">
+        <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left text-xs">
+                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-sm text-gray-400">
-                                No customer orders recorded.
-                            </td>
+                            <th class="px-5 py-3.5 font-semibold">Order ID</th>
+                            <th class="px-5 py-3.5 font-semibold">Customer</th>
+                            <th class="px-5 py-3.5 font-semibold">Date</th>
+                            <th class="px-5 py-3.5 font-semibold">Status</th>
+                            <th class="px-5 py-3.5 font-semibold">Items</th>
+                            <th class="px-5 py-3.5 font-semibold">Total</th>
+                            <th class="px-5 py-3.5 text-right font-semibold">Actions</th>
                         </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-zinc-700 dark:text-zinc-300">
+                        @forelse ($orders as $order)
+                            <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition">
+                                <td class="px-5 py-3.5 whitespace-nowrap font-mono text-xs font-bold text-zinc-900 dark:text-white">
+                                    #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap">
+                                    <div class="font-medium text-zinc-900 dark:text-white">{{ $order->user?->name ?? 'Guest Buyer' }}</div>
+                                    <div class="text-[10px] text-zinc-400 font-mono">{{ $order->user?->email ?? 'N/A' }}</div>
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap text-zinc-400 text-xs">
+                                    {{ $order->created_at->format('M d, Y H:i') }}
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap">
+                                    @php
+                                        $statusClasses = match($order->status) {
+                                            'paid', 'completed' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                            'shipped'           => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+                                            'pending'           => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+                                            'failed'            => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+                                            default             => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
+                                        };
+                                    @endphp
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium border {{ $statusClasses }}">
+                                        {{ ucfirst($order->status) }}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap text-xs text-zinc-600 dark:text-zinc-400 font-medium">
+                                    {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap font-serif font-bold text-sm text-zinc-900 dark:text-white">
+                                    ${{ number_format($order->total_amount, 2) }}
+                                </td>
+                                <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs">
+                                    <a href="{{ route('admin.orders.show', $order->id) }}"
+                                        class="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                                        Review Order →
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="7" class="px-6 py-12 text-center text-xs text-zinc-400">
+                                    No customer orders placed yet.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-        <div class="p-6 border-t border-gray-100">
-            {{ $orders->links() }}
+            <div class="p-4 border-t border-zinc-200 dark:border-zinc-800">
+                {{ $orders->links() }}
+            </div>
         </div>
     </div>
 </x-admin-layout>
