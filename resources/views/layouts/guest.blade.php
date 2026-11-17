@@ -26,51 +26,42 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased text-gray-900 dark:text-gray-100 bg-[#faf9f7] dark:bg-[#0d0e15] min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-colors duration-200">
-    <div class="w-full max-w-5xl bg-white dark:bg-darkcard rounded-3xl shadow-2xl overflow-hidden border border-gray-100 dark:border-darkborder flex flex-col md:flex-row min-h-[600px]">
+<body class="font-sans antialiased text-zinc-900 dark:text-zinc-100 bg-zinc-50 dark:bg-[#090a0f] min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8 transition-colors">
+    <div class="w-full max-w-4xl bg-white dark:bg-[#12131a] rounded-lg shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden flex flex-col md:flex-row min-h-[520px]">
         
-        <!-- Left Showcase Panel (Navy & Gold Bookstore Aesthetic) -->
-        <div class="md:w-5/12 bg-[#1a1a2e] text-white p-8 sm:p-12 flex flex-col justify-between relative overflow-hidden">
-            <!-- Decorative Background Element -->
-            <div class="absolute -right-16 -bottom-16 w-64 h-64 rounded-full bg-gold-500/10 blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-16 -top-16 w-64 h-64 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
-
-            <div class="relative z-10">
-                <a href="{{ route('home') }}" class="inline-flex items-center space-x-3 rtl:space-x-reverse group">
-                    <span class="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center text-[#1a1a2e] shadow-md group-hover:scale-105 transition-transform duration-200">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 3.75L3.75 6.75v12L12 15.75l8.25 3V6.75L12 3.75zM12 14.25l-6.75 2.25V7.875L12 5.625l6.75 2.25v8.625L12 14.25z"/>
-                        </svg>
+        <!-- Left Showcase Panel -->
+        <div class="md:w-5/12 bg-zinc-900 text-white p-8 sm:p-10 flex flex-col justify-between">
+            <div>
+                <a href="{{ route('home') }}" class="inline-flex items-center space-x-2.5 rtl:space-x-reverse">
+                    <span class="w-7 h-7 rounded-md bg-white text-zinc-900 flex items-center justify-center font-serif font-bold text-xs">
+                        B
                     </span>
-                    <span class="font-serif text-2xl font-bold tracking-tight text-white group-hover:text-gold-400 transition-colors">
+                    <span class="font-serif text-xl font-bold tracking-tight text-white">
                         BookStore
                     </span>
                 </a>
 
-                <div class="mt-12 space-y-4">
-                    <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-gold-500/20 text-gold-400 border border-gold-500/30">
-                        Member Sanctuary
-                    </span>
-                    <h2 class="font-serif text-2xl sm:text-3xl font-bold leading-tight text-white">
+                <div class="mt-10 space-y-2">
+                    <h2 class="font-serif text-2xl font-bold leading-tight text-white">
                         Where Curious Minds Find Rare Discoveries.
                     </h2>
-                    <p class="text-sm text-gray-300 leading-relaxed">
-                        Access your curated library, track your physical book deliveries, and unlock special member privileges.
+                    <p class="text-xs text-zinc-400 leading-relaxed pt-1">
+                        Access your curated library, track your physical book deliveries, and discover timeless literature.
                     </p>
                 </div>
             </div>
 
-            <div class="relative z-10 pt-8 mt-8 border-t border-navy-800">
-                <blockquote class="text-xs text-gray-400 italic font-serif">
+            <div class="pt-6 border-t border-zinc-800">
+                <blockquote class="text-xs text-zinc-400 italic font-serif">
                     "Reading is essential for those who seek to rise above the ordinary."
                 </blockquote>
-                <p class="text-[11px] text-gold-400 font-semibold mt-1">— Jim Rohn</p>
+                <p class="text-[11px] text-zinc-500 font-medium mt-1">— Jim Rohn</p>
             </div>
         </div>
 
         <!-- Right Content / Form Panel -->
-        <div class="md:w-7/12 p-8 sm:p-12 flex flex-col justify-center bg-[#faf9f7] dark:bg-darkcard">
-            <div class="w-full max-w-md mx-auto">
+        <div class="md:w-7/12 p-8 sm:p-10 flex flex-col justify-center bg-white dark:bg-[#12131a]">
+            <div class="w-full max-w-sm mx-auto">
                 {{ $slot }}
             </div>
         </div>

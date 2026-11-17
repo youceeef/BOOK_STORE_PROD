@@ -1,75 +1,68 @@
 {{-- resources/views/partials/_book_card.blade.php --}}
 @props(['book'])
 
-<div class="group relative bg-white dark:bg-darkcard rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100/80 dark:border-darkborder hover:border-gold-300 dark:hover:border-gold-500/50 flex flex-col justify-between hover:-translate-y-1">
+<div class="group bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-600 transition flex flex-col justify-between overflow-hidden">
     <div>
-        {{-- Cover Image Container with Book Depth Effect --}}
-        <div class="relative overflow-hidden aspect-[3/4] bg-gradient-to-tr from-gray-100 to-gray-50 dark:from-navy-950 dark:to-navy-900 flex items-center justify-center p-4">
-            <a href="{{ route('books.show', $book->slug) }}" class="block w-full h-full relative group/img">
-                <div class="w-full h-full rounded-lg overflow-hidden book-depth-shadow transition-transform duration-500 group-hover:scale-[1.03]">
-                    <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
-                        alt="{{ $book->title }}"
-                        loading="lazy"
-                        class="w-full h-full object-cover">
-                </div>
-            </a>
+        {{-- Cover Presentation: Clean frame, unoccluded artwork --}}
+        <a href="{{ route('books.show', $book->slug) }}" class="block relative aspect-[3/4] bg-zinc-100/70 dark:bg-zinc-900/50 p-5 overflow-hidden">
+            <div class="w-full h-full flex items-center justify-center">
+                <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
+                    alt="{{ $book->title }}"
+                    loading="lazy"
+                    class="max-h-full max-w-full object-contain shadow-sm group-hover:scale-[1.02] transition-transform duration-300">
+            </div>
+        </a>
 
-            {{-- Floating Category Badge --}}
-            @if ($book->category)
-                <a href="{{ route('categories.show', $book->category->slug) }}"
-                    class="absolute top-3 left-3 rtl:left-auto rtl:right-3 bg-[#1a1a2e]/90 backdrop-blur-md text-gold-400 text-[11px] font-semibold px-2.5 py-1 rounded-full border border-gold-500/30 hover:bg-[#1a1a2e] transition shadow-sm z-10">
-                    {{ $book->category->name }}
-                </a>
-            @endif
-
-            {{-- Floating Stock Status Badge --}}
-            <div class="absolute top-3 right-3 rtl:right-auto rtl:left-3 z-10">
+        {{-- Book Metadata --}}
+        <div class="p-4 flex flex-col">
+            <div class="flex items-center justify-between text-[11px] mb-1.5">
+                <span class="font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider truncate mr-2 rtl:mr-0 rtl:ml-2">
+                    {{ $book->category ? $book->category->name : 'Volume' }}
+                </span>
+                
+                {{-- Stock Status: Integrated inline, no radioactive pill --}}
                 @if ($book->stock > 0)
                     @if ($book->stock <= 5)
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/95 text-white backdrop-blur-sm shadow-sm">
-                            <span class="w-1.5 h-1.5 rounded-full bg-white mr-1 rtl:mr-0 rtl:ml-1 animate-pulse"></span>
+                        <span class="text-amber-600 dark:text-amber-400 font-medium flex-shrink-0">
                             {{ __('Only :count Left', ['count' => $book->stock]) }}
                         </span>
                     @else
-                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-600/90 text-white backdrop-blur-sm shadow-sm">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">
                             {{ __('In Stock') }}
                         </span>
                     @endif
                 @else
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-600/90 text-white backdrop-blur-sm shadow-sm">
+                    <span class="text-zinc-400 dark:text-zinc-500 font-medium flex-shrink-0">
                         {{ __('Sold Out') }}
                     </span>
                 @endif
             </div>
-        </div>
 
-        {{-- Book Metadata --}}
-        <div class="p-5 flex flex-col">
-            <p class="text-[11px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-medium mb-1 truncate">
-                {{ $book->author }}
-            </p>
-
-            <a href="{{ route('books.show', $book->slug) }}" class="group-hover:text-gold-600 dark:group-hover:text-gold-400 transition-colors">
-                <h3 class="font-serif font-bold text-gray-900 dark:text-gray-100 text-base leading-snug line-clamp-2 min-h-[2.75rem]" title="{{ $book->title }}">
+            <a href="{{ route('books.show', $book->slug) }}" class="block mb-1">
+                <h3 class="font-serif font-bold text-zinc-900 dark:text-white text-base leading-snug line-clamp-2 hover:underline decoration-zinc-400" title="{{ $book->title }}">
                     {{ $book->title }}
                 </h3>
             </a>
 
-            <div class="mt-3 flex items-baseline justify-between">
-                <span class="font-serif text-xl font-bold text-gray-900 dark:text-gray-100">
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-3 truncate">
+                {{ $book->author }}
+            </p>
+
+            <div class="flex items-baseline justify-between pt-1 border-t border-zinc-100 dark:border-zinc-800/80">
+                <span class="font-serif text-lg font-bold text-zinc-900 dark:text-zinc-100">
                     ${{ number_format($book->price, 2) }}
                 </span>
                 @if ($book->isbn)
-                    <span class="text-[10px] text-gray-400 dark:text-gray-500 font-mono tracking-tight" title="ISBN: {{ $book->isbn }}">
-                        ISBN {{ Str::limit($book->isbn, 8) }}
+                    <span class="text-[10px] text-zinc-400 font-mono" title="ISBN: {{ $book->isbn }}">
+                        {{ Str::limit($book->isbn, 10) }}
                     </span>
                 @endif
             </div>
         </div>
     </div>
 
-    {{-- Actions / Add to Cart with Live AJAX & Micro-Interactions --}}
-    <div class="p-5 pt-0 mt-auto">
+    {{-- Actions: Solid, confident CTA with live feedback --}}
+    <div class="p-4 pt-0 mt-auto">
         @if ($book->stock > 0)
             <form action="{{ route('cart.store') }}" method="POST"
                 x-data="{
@@ -94,14 +87,14 @@
                                 window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
                                 window.dispatchEvent(new CustomEvent('notify', {
                                     detail: {
-                                        title: data.title || '{{ __('Added!') }}',
+                                        title: '{{ __('Added!') }}',
                                         message: data.message,
                                         type: 'success',
                                         actionUrl: data.actionUrl,
                                         actionLabel: data.actionLabel
                                     }
                                 }));
-                                setTimeout(() => { this.added = false; }, 2200);
+                                setTimeout(() => { this.added = false; }, 2000);
                             } else {
                                 window.dispatchEvent(new CustomEvent('notify', {
                                     detail: { title: 'Notice', message: data.message || 'Could not add to bag', type: 'error' }
@@ -119,18 +112,13 @@
                 <input type="hidden" name="book_id" value="{{ $book->id }}">
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" :disabled="loading"
-                    class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2 rtl:space-x-reverse active:scale-95 group/btn disabled:opacity-75">
+                    class="w-full py-2 px-3 rounded-md text-xs font-medium text-white bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white dark:text-zinc-900 transition flex items-center justify-center space-x-1.5 rtl:space-x-reverse disabled:opacity-75">
                     <template x-if="!loading && !added">
-                        <span class="inline-flex items-center space-x-2 rtl:space-x-reverse">
-                            <svg class="w-4 h-4 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                            </svg>
-                            <span>{{ __('Add to Bag') }}</span>
-                        </span>
+                        <span>{{ __('Add to Bag') }}</span>
                     </template>
                     <template x-if="loading">
-                        <span class="inline-flex items-center space-x-2 rtl:space-x-reverse text-xs">
-                            <svg class="animate-spin h-3.5 w-3.5 text-[#1a1a2e]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <span class="inline-flex items-center space-x-1.5 rtl:space-x-reverse">
+                            <svg class="animate-spin h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -138,10 +126,8 @@
                         </span>
                     </template>
                     <template x-if="added">
-                        <span class="inline-flex items-center space-x-1.5 rtl:space-x-reverse text-xs font-bold text-[#1a1a2e]">
-                            <svg class="w-4 h-4 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                            </svg>
+                        <span class="inline-flex items-center space-x-1 rtl:space-x-reverse text-emerald-300 dark:text-emerald-700 font-semibold">
+                            <span>✓</span>
                             <span>{{ __('Added!') }}</span>
                         </span>
                     </template>
@@ -149,7 +135,7 @@
             </form>
         @else
             <button disabled
-                class="w-full py-2.5 px-4 rounded-xl text-xs font-semibold uppercase tracking-wider text-gray-400 bg-gray-100 dark:bg-navy-900/60 dark:text-gray-500 cursor-not-allowed">
+                class="w-full py-2 px-3 rounded-md text-xs font-medium text-zinc-400 bg-zinc-100 dark:bg-zinc-800 dark:text-zinc-500 cursor-not-allowed">
                 {{ __('Out of Stock') }}
             </button>
         @endif
