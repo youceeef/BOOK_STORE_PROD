@@ -7,6 +7,7 @@ use Darryldecode\Cart\Facades\CartFacade as Cart; // Use the Facade alias
 use App\Models\Book; // Import Book model
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 
 class CartController extends Controller
 {
@@ -25,7 +26,7 @@ class CartController extends Controller
     /**
      * Add an item to the cart.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): RedirectResponse | JsonResponse
     {
         $request->validate([
             'book_id' => 'required|exists:books,id',
@@ -36,6 +37,12 @@ class CartController extends Controller
 
         // Check if enough stock is available
         if ($book->stock < $request->quantity) {
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Not enough stock available for "' . $book->title . '". Only ' . $book->stock . ' left.'
+                ], 422);
+            }
             return back()->with('error', 'Not enough stock available for "' . $book->title . '". Only ' . $book->stock . ' left.');
         }
 
@@ -49,11 +56,19 @@ class CartController extends Controller
                 'slug' => $book->slug,
                 'stock' => $book->stock // Store original stock for reference if needed
             ]
-            // 'associatedModel' => $book // Optionally associate the Eloquent model
         ]);
 
-        // Optionally decrease stock here, or wait until checkout is complete
-        // $book->decrement('stock', $request->quantity);
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'title' => 'Added to Bag',
+                'message' => '"' . $book->title . '" has been added to your shopping bag.',
+                'actionUrl' => route('cart.index'),
+                'actionLabel' => 'View Bag',
+                'cartCount' => Cart::getTotalQuantity(),
+                'cartTotal' => Cart::getTotal()
+            ]);
+        }
 
         return redirect()->route('cart.index')->with('success', 'Book added to cart successfully!');
     }

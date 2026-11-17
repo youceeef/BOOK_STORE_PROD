@@ -68,19 +68,83 @@
         </div>
     </div>
 
-    {{-- Actions / Add to Cart --}}
+    {{-- Actions / Add to Cart with Live AJAX & Micro-Interactions --}}
     <div class="p-5 pt-0 mt-auto">
         @if ($book->stock > 0)
-            <form action="{{ route('cart.store') }}" method="POST">
+            <form action="{{ route('cart.store') }}" method="POST"
+                x-data="{
+                    loading: false,
+                    added: false,
+                    async addToCart(e) {
+                        e.preventDefault();
+                        this.loading = true;
+                        try {
+                            const res = await fetch('{{ route('cart.store') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ book_id: {{ $book->id }}, quantity: 1 })
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                                this.added = true;
+                                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                                window.dispatchEvent(new CustomEvent('notify', {
+                                    detail: {
+                                        title: data.title || 'Added to Bag',
+                                        message: data.message,
+                                        type: 'success',
+                                        actionUrl: data.actionUrl,
+                                        actionLabel: data.actionLabel
+                                    }
+                                }));
+                                setTimeout(() => { this.added = false; }, 2200);
+                            } else {
+                                window.dispatchEvent(new CustomEvent('notify', {
+                                    detail: { title: 'Notice', message: data.message || 'Could not add to bag', type: 'error' }
+                                }));
+                            }
+                        } catch (err) {
+                            e.target.submit();
+                        } finally {
+                            this.loading = false;
+                        }
+                    }
+                }"
+                @submit="addToCart($event)">
                 @csrf
                 <input type="hidden" name="book_id" value="{{ $book->id }}">
                 <input type="hidden" name="quantity" value="1">
-                <button type="submit"
-                    class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2 active:scale-95 group/btn">
-                    <svg class="w-4 h-4 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    <span>Add to Bag</span>
+                <button type="submit" :disabled="loading"
+                    class="w-full py-2.5 px-4 rounded-xl text-sm font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-sm flex items-center justify-center space-x-2 active:scale-95 group/btn disabled:opacity-75">
+                    <template x-if="!loading && !added">
+                        <span class="inline-flex items-center space-x-2">
+                            <svg class="w-4 h-4 transform group-hover/btn:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            <span>Add to Bag</span>
+                        </span>
+                    </template>
+                    <template x-if="loading">
+                        <span class="inline-flex items-center space-x-2 text-xs">
+                            <svg class="animate-spin h-3.5 w-3.5 text-[#1a1a2e]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span>Adding...</span>
+                        </span>
+                    </template>
+                    <template x-if="added">
+                        <span class="inline-flex items-center space-x-1.5 text-xs font-bold text-[#1a1a2e]">
+                            <svg class="w-4 h-4 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Added!</span>
+                        </span>
+                    </template>
                 </button>
             </form>
         @else

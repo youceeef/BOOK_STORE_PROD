@@ -114,10 +114,54 @@
                         </div>
                     </div>
 
-                    {{-- Add to Cart Form Section --}}
+                    {{-- Add to Cart Form Section with Live AJAX & Micro-Interactions --}}
                     <div class="pt-6 border-t border-gray-100">
                         @if ($book->stock > 0)
-                            <form action="{{ route('cart.store') }}" method="POST" class="space-y-4">
+                            <form action="{{ route('cart.store') }}" method="POST" class="space-y-4"
+                                x-data="{
+                                    qty: 1,
+                                    loading: false,
+                                    added: false,
+                                    async addToCart(e) {
+                                        e.preventDefault();
+                                        this.loading = true;
+                                        try {
+                                            const res = await fetch('{{ route('cart.store') }}', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                    'Accept': 'application/json',
+                                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                },
+                                                body: JSON.stringify({ book_id: {{ $book->id }}, quantity: this.qty })
+                                            });
+                                            const data = await res.json();
+                                            if (res.ok && data.success) {
+                                                this.added = true;
+                                                window.dispatchEvent(new CustomEvent('cart-updated', { detail: { count: data.cartCount } }));
+                                                window.dispatchEvent(new CustomEvent('notify', {
+                                                    detail: {
+                                                        title: data.title || 'Added to Bag',
+                                                        message: data.message,
+                                                        type: 'success',
+                                                        actionUrl: data.actionUrl,
+                                                        actionLabel: data.actionLabel
+                                                    }
+                                                }));
+                                                setTimeout(() => { this.added = false; }, 2500);
+                                            } else {
+                                                window.dispatchEvent(new CustomEvent('notify', {
+                                                    detail: { title: 'Notice', message: data.message || 'Could not add to bag', type: 'error' }
+                                                }));
+                                            }
+                                        } catch (err) {
+                                            e.target.submit();
+                                        } finally {
+                                            this.loading = false;
+                                        }
+                                    }
+                                }"
+                                @submit="addToCart($event)">
                                 @csrf
                                 <input type="hidden" name="book_id" value="{{ $book->id }}">
 
@@ -125,26 +169,47 @@
                                     {{-- Quantity Selector --}}
                                     <div class="flex items-center border border-gray-200 rounded-2xl bg-[#faf9f7] p-1 w-36 justify-between shadow-sm">
                                         <button type="button"
-                                            onclick="let el = document.getElementById('qty-input'); if(el.value > 1) el.value--;"
+                                            @click="if(qty > 1) qty--"
                                             class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-700 hover:text-black shadow-sm font-bold active:scale-95 transition">
                                             -
                                         </button>
-                                        <input type="number" id="qty-input" name="quantity" value="1" min="1" max="{{ $book->stock }}"
+                                        <input type="number" id="qty-input" name="quantity" x-model="qty" min="1" max="{{ $book->stock }}"
                                             class="w-12 text-center bg-transparent border-0 font-bold text-gray-900 focus:ring-0 text-sm">
                                         <button type="button"
-                                            onclick="let el = document.getElementById('qty-input'); if(el.value < {{ $book->stock }}) el.value++;"
+                                            @click="if(qty < {{ $book->stock }}) qty++"
                                             class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-gray-700 hover:text-black shadow-sm font-bold active:scale-95 transition">
                                             +
                                         </button>
                                     </div>
 
                                     {{-- Submit CTA Button --}}
-                                    <button type="submit"
-                                        class="flex-1 py-4 px-8 rounded-2xl text-base font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-lg flex items-center justify-center space-x-3 active:scale-98">
-                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                                        </svg>
-                                        <span>Add to Shopping Bag</span>
+                                    <button type="submit" :disabled="loading"
+                                        class="flex-1 py-4 px-8 rounded-2xl text-base font-semibold text-[#1a1a2e] bg-gradient-to-r from-gold-400 via-gold-500 to-gold-400 hover:from-gold-300 hover:to-gold-400 transition-all duration-200 shadow-lg flex items-center justify-center space-x-3 active:scale-98 disabled:opacity-75">
+                                        <template x-if="!loading && !added">
+                                            <span class="inline-flex items-center space-x-2.5">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                                </svg>
+                                                <span>Add to Shopping Bag</span>
+                                            </span>
+                                        </template>
+                                        <template x-if="loading">
+                                            <span class="inline-flex items-center space-x-2">
+                                                <svg class="animate-spin h-5 w-5 text-[#1a1a2e]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                <span>Adding to Bag...</span>
+                                            </span>
+                                        </template>
+                                        <template x-if="added">
+                                            <span class="inline-flex items-center space-x-2 font-bold text-[#1a1a2e]">
+                                                <svg class="w-5 h-5 text-emerald-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                                <span>Added to Bag!</span>
+                                            </span>
+                                        </template>
                                     </button>
                                 </div>
                             </form>

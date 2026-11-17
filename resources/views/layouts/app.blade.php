@@ -129,6 +129,29 @@
             </div>
         </div>
     </footer>
+
+    {{-- shadcn/ui Floating Toast Notifications --}}
+    <x-toast />
+
+    @if (session('success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: { title: 'Success', message: @json(session('success')), type: 'success' }
+                }));
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                window.dispatchEvent(new CustomEvent('notify', {
+                    detail: { title: 'Notice', message: @json(session('error')), type: 'error' }
+                }));
+            });
+        </script>
+    @endif
 </body>
 
 </html>

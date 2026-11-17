@@ -141,20 +141,19 @@
                     @endif
                 </form>
 
-                {{-- Shopping Bag with Mini Hover Preview --}}
-                <div class="relative" x-data="{ cartPreview: false }">
+                {{-- Shopping Bag with Live Counter --}}
+                <div class="relative" x-data="{ count: {{ $cartCountGlobal ?? 0 }} }" @cart-updated.window="count = $event.detail.count">
                     <a href="{{ route('cart.index') }}"
-                        @mouseenter="cartPreview = true"
                         class="relative p-2.5 rounded-2xl text-gray-300 hover:text-white hover:bg-white/5 transition flex items-center justify-center">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                         </svg>
-                        @if (isset($cartCountGlobal) && $cartCountGlobal > 0)
-                            <span class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-bold leading-none text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 rounded-full shadow-md min-w-[20px] h-[20px] animate-bounce">
-                                {{ $cartCountGlobal }}
-                            </span>
-                        @endif
+                        <span x-show="count > 0" x-text="count"
+                            class="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[11px] font-bold leading-none text-[#1a1a2e] bg-gradient-to-r from-gold-400 to-gold-500 rounded-full shadow-md min-w-[20px] h-[20px] transition-transform duration-200 transform scale-100"
+                            style="{{ (isset($cartCountGlobal) && $cartCountGlobal > 0) ? '' : 'display: none;' }}">
+                            {{ $cartCountGlobal ?? '' }}
+                        </span>
                     </a>
                 </div>
 
