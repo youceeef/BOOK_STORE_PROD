@@ -432,7 +432,7 @@
 
             {{-- Review Submission Form Drawer --}}
             @auth
-                <div x-show="showForm" x-cloak class="mb-10 p-6 bg-zinc-50 dark:bg-zinc-900/60 rounded-lg border border-zinc-200 dark:border-zinc-800">
+                <div x-show="showForm" x-cloak style="display: none;" class="mb-10 p-6 bg-zinc-50 dark:bg-zinc-900/60 rounded-lg border border-zinc-200 dark:border-zinc-800">
                     <h3 class="font-serif text-base font-bold text-zinc-900 dark:text-white mb-1">
                         {{ $userReview ? 'Update Your Review' : 'Share Your Review' }}
                     </h3>
@@ -613,7 +613,7 @@
              "Look Inside" Chapter Reader Modal (Alpine.js)
              ======================================================== --}}
         @if ($book->hasSample())
-            <div x-show="readerOpen" x-cloak
+            <div x-show="readerOpen" x-cloak style="display: none;"
                 class="fixed inset-0 z-50 overflow-hidden bg-black/70 flex items-center justify-center p-3 sm:p-6"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95"

@@ -2,6 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Anti-FOUC for Alpine.js cloak elements */
+[x-cloak] {
+    display: none !important;
+}
+
 @layer base {
     html {
         scroll-behavior: smooth;

@@ -6,6 +6,8 @@
 
     {{-- Solid Translucent Backdrop (No AI blur glassmorphism K3) --}}
     <div x-show="isOpen"
+        x-cloak
+        style="display: none;"
         x-transition:enter="transition ease-out duration-150"
         x-transition:enter-start="opacity-0"
         x-transition:enter-end="opacity-100"
@@ -18,6 +20,8 @@
         {{-- Palette Container: Monochromatic, crisp 1px borders, restrained elevation --}}
         <div @click.stop
             x-show="isOpen"
+            x-cloak
+            style="display: none;"
             x-transition:enter="transition ease-out duration-150"
             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"

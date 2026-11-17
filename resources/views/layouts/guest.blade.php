@@ -14,7 +14,10 @@
     <!-- avoid-ai-design-ignore: T1 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
-    <!-- Anti-FOUC Dark/Light Mode Detector -->
+    <!-- Anti-FOUC Dark/Light Mode Detector & Alpine x-cloak Shield -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     <script>
         if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');

@@ -14,7 +14,10 @@
     <!-- avoid-ai-design-ignore: T1 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- Dark Mode Anti-FOUC Script -->
+    <!-- Dark Mode Anti-FOUC Script & Alpine x-cloak Shield -->
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
     <script>
         (function() {
             const savedTheme = localStorage.getItem('theme');
