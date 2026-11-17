@@ -17,7 +17,9 @@ class Order extends Model
         'total_amount',
         'stripe_payment_intent_id',
         'billing_address',
-        'shipping_address'
+        'shipping_address',
+        'coupon_code',
+        'discount_amount',
     ];
 
     // An Order belongs to a User

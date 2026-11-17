@@ -185,7 +185,7 @@ class CheckoutController extends Controller
                 'postal_code' => $validated['postal_code'] ?? null,
             ]);
 
-            DB::transaction(function () use ($user, $finalTotal, $paymentIntentId, $shippingAddress, $cartItemsCollection, $couponModel) {
+            DB::transaction(function () use ($user, $finalTotal, $paymentIntentId, $shippingAddress, $cartItemsCollection, $couponModel, $couponCode, $discount) {
                 // Check if already created (idempotency guard)
                 $order = Order::where('stripe_payment_intent_id', $paymentIntentId)->first();
                 if (!$order) {
@@ -196,6 +196,8 @@ class CheckoutController extends Controller
                         'stripe_payment_intent_id' => $paymentIntentId,
                         'shipping_address' => $shippingAddress,
                         'billing_address' => $shippingAddress,
+                        'coupon_code' => $couponCode,
+                        'discount_amount' => $discount,
                     ]);
 
                     foreach ($cartItemsCollection as $cartItem) {
@@ -213,7 +215,7 @@ class CheckoutController extends Controller
                     }
 
                     if ($couponModel) {
-                        $couponModel->increment('times_used');
+                        $couponModel->increment('usage_count');
                     }
                 }
             });
@@ -239,6 +241,8 @@ class CheckoutController extends Controller
             // Provide more specific feedback if possible (e.g., from Stripe CardException)
             if ($e instanceof \Stripe\Exception\CardException) {
                 $errorMessage = $e->getError()->message ?? $errorMessage;
+            } elseif (config('app.debug')) {
+                $errorMessage .= ' (' . $e->getMessage() . ')';
             }
             return redirect()->route('checkout.index')->with('error', $errorMessage);
         }
