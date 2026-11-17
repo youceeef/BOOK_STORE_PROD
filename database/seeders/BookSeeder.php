@@ -6,6 +6,7 @@ use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class BookSeeder extends Seeder
 {
@@ -77,7 +78,9 @@ class BookSeeder extends Seeder
             ];
         }
 
+        Schema::disableForeignKeyConstraints();
         DB::table('books')->truncate();
+        Schema::enableForeignKeyConstraints();
         DB::table('books')->insert($books);
     }
 }
