@@ -9,6 +9,8 @@ use App\Models\Order;
 use App\Models\Book;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
 
 class OrderController extends Controller
@@ -43,6 +45,28 @@ class OrderController extends Controller
         $order->load(['items', 'items.book']);
 
         return view('orders.show', compact('order'));
+    }
+
+    /**
+     * Generate and download the official PDF tax invoice for an order.
+     */
+    public function downloadInvoice(Order $order): Response | RedirectResponse
+    {
+        $user = Auth::user();
+
+        // Ensure user owns this order, or is an administrator
+        if ($order->user_id !== $user->id && !$user->is_admin) {
+            abort(403, 'Unauthorized access to invoice.');
+        }
+
+        $order->load(['items', 'items.book', 'user']);
+
+        $pdf = Pdf::loadView('orders.pdf', compact('order'));
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'invoice-ORD-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     /**

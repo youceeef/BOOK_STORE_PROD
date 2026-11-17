@@ -43,14 +43,23 @@
                             </p>
                         </div>
 
-                        <div class="flex items-center justify-between md:justify-end space-x-6 rtl:space-x-reverse border-t md:border-t-0 pt-3 md:pt-0 border-zinc-100 dark:border-zinc-800">
-                            <div class="text-left md:text-right rtl:md:text-left">
+                        <div class="flex items-center justify-between md:justify-end space-x-3 rtl:space-x-reverse border-t md:border-t-0 pt-3 md:pt-0 border-zinc-100 dark:border-zinc-800">
+                            <div class="text-left md:text-right rtl:md:text-left pr-3">
                                 <span class="text-[11px] text-zinc-400 block">Total</span>
                                 <span class="font-serif text-lg font-bold text-zinc-900 dark:text-white">${{ number_format($order->total_amount, 2) }}</span>
                             </div>
 
+                            <a href="{{ route('orders.invoice', $order) }}"
+                                title="Download PDF Tax Invoice"
+                                class="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-white dark:bg-[#151722] hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition">
+                                <svg class="w-3.5 h-3.5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <span>PDF</span>
+                            </a>
+
                             <a href="{{ route('orders.show', $order->id) }}"
-                                class="inline-flex items-center px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition">
+                                class="inline-flex items-center px-3.5 py-1.5 rounded-md text-xs font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition shadow-sm">
                                 View Details →
                             </a>
                         </div>

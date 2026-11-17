@@ -1,15 +1,24 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between w-full">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full">
             <div>
                 <span class="text-xs uppercase font-semibold tracking-wider text-zinc-500 dark:text-zinc-400 block mb-0.5">Order Invoice</span>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">
                     #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                 </h1>
             </div>
-            <a href="{{ route('orders.index') }}" class="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
-                ← Back to Order History
-            </a>
+            <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                <a href="{{ route('orders.invoice', $order) }}"
+                    class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download PDF Invoice</span>
+                </a>
+                <a href="{{ route('orders.index') }}" class="text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition">
+                    ← Back to Orders
+                </a>
+            </div>
         </div>
     </x-slot>
 

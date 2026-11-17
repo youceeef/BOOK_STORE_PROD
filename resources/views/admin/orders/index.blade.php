@@ -56,10 +56,18 @@
                                 <td class="px-5 py-3.5 whitespace-nowrap font-serif font-bold text-sm text-zinc-900 dark:text-white">
                                     ${{ number_format($order->total_amount, 2) }}
                                 </td>
-                                <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs">
+                                <td class="px-5 py-3.5 whitespace-nowrap text-right text-xs space-x-1.5 rtl:space-x-reverse">
+                                    <a href="{{ route('admin.orders.invoice', $order) }}"
+                                        title="Download Tax Invoice"
+                                        class="inline-flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-medium text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 border border-zinc-200 dark:border-zinc-700 transition">
+                                        <svg class="w-3 h-3 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span>PDF</span>
+                                    </a>
                                     <a href="{{ route('admin.orders.show', $order->id) }}"
                                         class="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                                        Review Order →
+                                        Review →
                                     </a>
                                 </td>
                             </tr>

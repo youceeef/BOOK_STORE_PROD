@@ -7,10 +7,19 @@
                     #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                 </h1>
             </div>
-            <a href="{{ route('admin.orders.index') }}"
-                class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition self-start sm:self-auto">
-                ← Back to All Orders
-            </a>
+            <div class="flex items-center space-x-2.5 rtl:space-x-reverse self-start sm:self-auto">
+                <a href="{{ route('admin.orders.invoice', $order) }}"
+                    class="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 transition shadow-sm">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Download PDF Invoice</span>
+                </a>
+                <a href="{{ route('admin.orders.index') }}"
+                    class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                    ← Back to All Orders
+                </a>
+            </div>
         </div>
     </x-slot>
 
