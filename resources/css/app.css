@@ -28,6 +28,27 @@
     .dark ::-webkit-scrollbar-thumb:hover {
         background: #3f3f46;
     }
+
+    /* Browser Autofill styling: prevent glaring light-blue backgrounds in dark mode */
+    input:-webkit-autofill,
+    input:-webkit-autofill:hover,
+    input:-webkit-autofill:focus,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+        -webkit-text-fill-color: #18181b;
+        -webkit-box-shadow: 0 0 0px 1000px #ffffff inset;
+        transition: background-color 5000s ease-in-out 0s;
+    }
+
+    .dark input:-webkit-autofill,
+    .dark input:-webkit-autofill:hover,
+    .dark input:-webkit-autofill:focus,
+    .dark textarea:-webkit-autofill,
+    .dark select:-webkit-autofill {
+        -webkit-text-fill-color: #ffffff !important;
+        -webkit-box-shadow: 0 0 0px 1000px #18181b inset !important;
+        transition: background-color 5000s ease-in-out 0s;
+    }
 }
 
 @layer utilities {
