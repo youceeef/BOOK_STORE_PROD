@@ -74,20 +74,17 @@
 
             {{-- Center/Right: Restrained Search & Functional Controls --}}
             <div class="hidden md:flex items-center space-x-3 rtl:space-x-reverse">
-                {{-- Fast Search Input: Clean rounded-lg, no balloon pill --}}
-                <form action="{{ route('books.index') }}" method="GET" class="relative">
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        placeholder="{{ __('Search books, authors, ISBN...') }}"
-                        class="w-48 lg:w-64 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 pl-8 pr-6 rtl:pl-6 rtl:pr-8 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 focus:w-72 focus:bg-white dark:focus:bg-[#12131a] focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400 transition-all">
-                    <svg class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 rtl:left-auto rtl:right-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {{-- Fast Search Input with Command Palette Trigger (⌘K) --}}
+                <div class="relative cursor-pointer group" @click="$dispatch('open-command-palette')">
+                    <button type="button"
+                        class="w-48 lg:w-64 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-400 pl-8 pr-3 rtl:pl-3 rtl:pr-8 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 flex items-center justify-between text-left rtl:text-right transition-all">
+                        <span class="truncate">{{ __('Search or press ⌘K...') }}</span>
+                        <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded pointer-events-none">⌘K</kbd>
+                    </button>
+                    <svg class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 rtl:left-auto rtl:right-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    @if (request('search'))
-                        <a href="{{ route('books.index') }}" class="absolute right-2 rtl:right-auto rtl:left-2 top-2 text-zinc-400 hover:text-zinc-700 dark:hover:text-white text-xs">
-                            ✕
-                        </a>
-                    @endif
-                </form>
+                </div>
 
                 {{-- Language Switcher: Minimal, discrete text selector --}}
                 <div class="relative" x-data="{ langOpen: false }" @click.outside="langOpen = false">
@@ -298,11 +295,11 @@
 
     {{-- Mobile Expandable Drawer --}}
     <div :class="{ 'block': open, 'hidden': !open }" class="hidden md:hidden bg-white dark:bg-[#12131a] border-b border-zinc-200 dark:border-zinc-800 px-4 pt-3 pb-5 space-y-3">
-        <form action="{{ route('books.index') }}" method="GET">
-            <input type="text" name="search" value="{{ request('search') }}"
-                placeholder="{{ __('Search books, authors, ISBN...') }}"
-                class="w-full bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800">
-        </form>
+        <button type="button" @click="open = false; $dispatch('open-command-palette')"
+            class="w-full bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-400 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-left rtl:text-right">
+            <span>{{ __('Search or open command palette...') }}</span>
+            <kbd class="px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">⌘K</kbd>
+        </button>
 
         <div class="flex items-center justify-between py-2 border-y border-zinc-100 dark:border-zinc-800 text-xs">
             <span class="text-zinc-500">Language:</span>

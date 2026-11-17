@@ -99,4 +99,43 @@ class BookController extends Controller
             'reviewsCount'
         ));
     }
+
+    /**
+     * Real-time search endpoint for the Global Command Palette (⌘K).
+     */
+    public function paletteSearch(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $term = trim($request->input('q', ''));
+
+        if (mb_strlen($term) < 1) {
+            return response()->json([]);
+        }
+
+        $results = Book::query()
+            ->with('category')
+            ->where(function ($q) use ($term) {
+                $q->where('title', 'LIKE', "%{$term}%")
+                    ->orWhere('author', 'LIKE', "%{$term}%")
+                    ->orWhere('isbn', 'LIKE', "%{$term}%")
+                    ->orWhereHas('category', function ($catQuery) use ($term) {
+                        $catQuery->where('name', 'LIKE', "%{$term}%");
+                    });
+            })
+            ->take(8)
+            ->get()
+            ->map(function ($book) {
+                return [
+                    'id' => $book->id,
+                    'title' => $book->title,
+                    'author' => $book->author,
+                    'category' => $book->category?->name ?? 'Uncategorized',
+                    'price' => '$' . number_format($book->price, 2),
+                    'stock' => $book->stock,
+                    'cover' => asset($book->cover_image ?: 'images/covers/default.png'),
+                    'url' => route('books.show', $book->slug),
+                ];
+            });
+
+        return response()->json($results);
+    }
 }

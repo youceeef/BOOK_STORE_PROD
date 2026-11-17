@@ -37,6 +37,9 @@
     <!-- Global Floating Toast Notifications -->
     <x-toast />
 
+    <!-- Global Spotlight Command Palette (⌘K / Ctrl+K) -->
+    <x-command-palette />
+
     <div class="flex flex-1">
         <!-- Admin Dedicated Monochromatic Sidebar -->
         <aside class="hidden md:flex md:flex-col w-64 bg-white dark:bg-[#0e0f15] border-r border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 flex-shrink-0">

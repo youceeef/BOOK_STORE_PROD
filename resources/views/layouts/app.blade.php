@@ -89,6 +89,9 @@
     {{-- Minimal Toast Notifications --}}
     <x-toast />
 
+    {{-- Global Spotlight Command Palette (⌘K / Ctrl+K) --}}
+    <x-command-palette />
+
     @if (session('success'))
         <script>
             document.addEventListener('DOMContentLoaded', () => {

@@ -39,6 +39,7 @@ Route::get('/', function () {
 // Public Book Listing & Detail (Using Slug for Detail)
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
 Route::get('/books/{book:slug}', [BookController::class, 'show'])->name('books.show');
+Route::get('/api/search/palette', [BookController::class, 'paletteSearch'])->name('api.search.palette');
 // --- Public Category Browsing ---
 Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show'); // <-- Add this route
 
