@@ -95,7 +95,7 @@
                     </div>
 
                     @if ($order->discount_amount > 0)
-                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                        <div class="flex justify-between text-zinc-900 dark:text-white font-medium">
                             <span>Discount ({{ $order->coupon_code }})</span>
                             <span>-${{ number_format($order->discount_amount, 2) }}</span>
                         </div>
@@ -103,7 +103,7 @@
 
                     <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
                         <span>Tracked Shipping</span>
-                        <span class="text-emerald-600 dark:text-emerald-400 font-medium">Free</span>
+                        <span class="font-medium text-zinc-900 dark:text-white">Free</span>
                     </div>
 
                     <div class="border-t border-zinc-200 dark:border-zinc-700 pt-2.5 flex justify-between items-baseline">

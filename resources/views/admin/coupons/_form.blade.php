@@ -3,7 +3,7 @@
 <div class="space-y-5">
     {{-- Code --}}
     <div>
-        <label for="code" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+        <label for="code" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             Coupon Code <span class="text-rose-500">*</span>
         </label>
         <input type="text" name="code" id="code" value="{{ old('code', $coupon->code ?? '') }}" required
@@ -17,7 +17,7 @@
     {{-- Type & Value Grid --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-            <label for="type" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+            <label for="type" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Discount Type <span class="text-rose-500">*</span>
             </label>
             <select name="type" id="type" required
@@ -32,7 +32,7 @@
         </div>
 
         <div>
-            <label for="value" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+            <label for="value" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Discount Value <span class="text-rose-500">*</span>
             </label>
             <input type="number" name="value" id="value" value="{{ old('value', $coupon->value ?? '') }}" required
@@ -47,7 +47,7 @@
     {{-- Minimum Amount & Usage Limit --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
         <div>
-            <label for="min_amount" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+            <label for="min_amount" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Minimum Cart Total ($)
             </label>
             <input type="number" name="min_amount" id="min_amount" value="{{ old('min_amount', $coupon->min_amount ?? '') }}"
@@ -59,7 +59,7 @@
         </div>
 
         <div>
-            <label for="usage_limit" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+            <label for="usage_limit" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Total Redemptions Limit
             </label>
             <input type="number" name="usage_limit" id="usage_limit" value="{{ old('usage_limit', $coupon->usage_limit ?? '') }}"
@@ -73,7 +73,7 @@
 
     {{-- Expiration Date --}}
     <div>
-        <label for="expires_at" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+        <label for="expires_at" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             Expiration Date (Optional)
         </label>
         <input type="datetime-local" name="expires_at" id="expires_at"

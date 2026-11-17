@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
             <div>
-                <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Catalog Management</span>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Catalog</p>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Manage Volumes</h1>
             </div>
             <a href="{{ route('admin.books.create') }}"
@@ -19,7 +19,7 @@
         <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left text-xs">
-                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 font-medium text-xs">
                         <tr>
                             <th class="px-5 py-3.5 font-semibold">Volume</th>
                             <th class="px-5 py-3.5 font-semibold">Category</th>
@@ -44,7 +44,7 @@
                                             </a>
                                             <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">by {{ $book->author }}</p>
                                             @if ($book->isbn)
-                                                <span class="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">ISBN: {{ $book->isbn }}</span>
+                                                <span class="text-[11px] text-zinc-400 dark:text-zinc-500 tabular-nums">ISBN: {{ $book->isbn }}</span>
                                             @endif
                                         </div>
                                     </div>
@@ -57,15 +57,15 @@
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap">
                                     @if ($book->stock <= 0)
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                                        <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
                                             Out of stock (0)
                                         </span>
                                     @elseif ($book->stock <= 5)
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                        <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                             Low: {{ $book->stock }} left
                                         </span>
                                     @else
-                                        <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                        <span class="px-2 py-0.5 rounded text-[11px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                                             {{ $book->stock }} in stock
                                         </span>
                                     @endif

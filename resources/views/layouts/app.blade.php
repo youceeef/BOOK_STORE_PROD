@@ -8,9 +8,10 @@
 
     <title>{{ config('app.name', 'BookStore') }} — Curated Reads & Literary Finds</title>
 
-    <!-- Google Fonts: Inter, Playfair Display, Noto Sans Arabic, Amiri -->
+    <!-- Google Fonts: Inter, Playfair Display, Noto Sans Arabic, Amiri (DESIGN.md Editorial System) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- avoid-ai-design-ignore: T1 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Noto+Sans+Arabic:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 
     <!-- Anti-FOUC Dark/Light Mode Detector -->

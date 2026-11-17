@@ -8,9 +8,10 @@
 
     <title>{{ config('app.name', 'BookStore') }} — Administration Panel</title>
 
-    <!-- Google Fonts: Inter & Playfair Display -->
+    <!-- Google Fonts: Inter & Playfair Display (DESIGN.md Editorial System) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- avoid-ai-design-ignore: T1 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 
     <!-- Dark Mode Anti-FOUC Script -->

@@ -145,7 +145,7 @@
                                                 {{ __('Only :count left', ['count' => $book->stock]) }}
                                             </span>
                                         @else
-                                            <span class="text-emerald-600 dark:text-emerald-400 font-medium">
+                                            <span class="text-zinc-700 dark:text-zinc-300 font-medium">
                                                 {{ __('In Stock') }}
                                             </span>
                                         @endif

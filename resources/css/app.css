@@ -7,6 +7,15 @@
         scroll-behavior: smooth;
     }
 
+    /* Accessibility & Focus Polish: Crisp, visible keyboard focus indicators */
+    :focus-visible {
+        outline: 2px solid #18181b;
+        outline-offset: 2px;
+    }
+    .dark :focus-visible {
+        outline-color: #f4f4f5;
+    }
+
     /* Clean, quiet, native-feel scrollbars */
     ::-webkit-scrollbar {
         width: 8px;

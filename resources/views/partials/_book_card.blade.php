@@ -56,7 +56,7 @@
                     @click="toggleWishlist()"
                     :disabled="toggling"
                     title="{{ __('Save volume') }}"
-                    class="w-7 h-7 rounded-full bg-white/90 dark:bg-zinc-900/90 backdrop-blur-sm border border-zinc-200/80 dark:border-zinc-700/80 flex items-center justify-center text-zinc-400 hover:text-rose-500 hover:border-rose-300 transition shadow-xs focus:outline-none">
+                    class="w-7 h-7 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-rose-500 hover:border-rose-300 transition shadow-xs focus:outline-none">
                     <svg class="w-3.5 h-3.5 transition-transform active:scale-125" :class="saved ? 'text-rose-500 fill-current' : 'text-zinc-400 hover:text-rose-500 fill-none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round"
                             d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -67,8 +67,8 @@
 
         {{-- Book Metadata --}}
         <div class="p-4 flex flex-col">
-            <div class="flex items-center justify-between text-[11px] mb-1.5">
-                <span class="font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider truncate mr-2 rtl:mr-0 rtl:ml-2">
+            <div class="flex items-center justify-between text-xs mb-1.5">
+                <span class="font-medium text-zinc-500 dark:text-zinc-400 truncate mr-2 rtl:mr-0 rtl:ml-2">
                     {{ $book->category ? $book->category->name : 'Volume' }}
                 </span>
                 
@@ -79,7 +79,7 @@
                             {{ __('Only :count Left', ['count' => $book->stock]) }}
                         </span>
                     @else
-                        <span class="text-emerald-600 dark:text-emerald-400 font-medium flex-shrink-0">
+                        <span class="text-zinc-700 dark:text-zinc-300 font-medium flex-shrink-0">
                             {{ __('In Stock') }}
                         </span>
                     @endif
@@ -192,7 +192,7 @@
                         </span>
                     </template>
                     <template x-if="added">
-                        <span class="inline-flex items-center space-x-1 rtl:space-x-reverse text-emerald-300 dark:text-emerald-700 font-semibold">
+                        <span class="inline-flex items-center space-x-1 rtl:space-x-reverse text-zinc-200 dark:text-zinc-800 font-semibold">
                             <span>✓</span>
                             <span>{{ __('Added!') }}</span>
                         </span>

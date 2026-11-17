@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
             <div>
-                <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Order Invoice (Admin Audit)</span>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Order Invoice</p>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">
                     #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                 </h1>
@@ -17,7 +17,7 @@
                 </a>
                 <a href="{{ route('admin.orders.index') }}"
                     class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                    ← Back to All Orders
+                    Back to All Orders
                 </a>
             </div>
         </div>
@@ -73,7 +73,7 @@
                 </div>
                 <div class="flex justify-between py-1">
                     <span class="text-zinc-500 dark:text-zinc-400">Email Address</span>
-                    <span class="font-mono text-zinc-900 dark:text-white">{{ $order->user?->email ?? 'N/A' }}</span>
+                    <span class="text-zinc-900 dark:text-white">{{ $order->user?->email ?? 'N/A' }}</span>
                 </div>
             </div>
 
@@ -97,7 +97,7 @@
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left text-xs">
-                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 font-medium text-xs">
                         <tr>
                             <th class="px-5 py-3 font-semibold">Volume</th>
                             <th class="px-5 py-3 font-semibold">Unit Price</th>
@@ -122,10 +122,10 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td class="px-5 py-3.5 font-mono text-zinc-600 dark:text-zinc-400">
+                                <td class="px-5 py-3.5 text-zinc-600 dark:text-zinc-400 tabular-nums">
                                     ${{ number_format($item->price, 2) }}
                                 </td>
-                                <td class="px-5 py-3.5 font-mono text-zinc-900 dark:text-white font-medium">
+                                <td class="px-5 py-3.5 text-zinc-900 dark:text-white font-medium tabular-nums">
                                     {{ $item->quantity }}
                                 </td>
                                 <td class="px-5 py-3.5 text-right font-serif font-bold text-zinc-900 dark:text-white">
@@ -152,7 +152,7 @@
                     </div>
 
                     @if ($order->discount_amount > 0)
-                        <div class="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                        <div class="flex justify-between text-zinc-900 dark:text-white font-medium">
                             <span>Discount ({{ $order->coupon_code }})</span>
                             <span>-${{ number_format($order->discount_amount, 2) }}</span>
                         </div>
@@ -160,11 +160,11 @@
 
                     <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
                         <span>Tracked Shipping</span>
-                        <span class="text-emerald-600 dark:text-emerald-400 font-medium">Free</span>
+                        <span class="font-medium text-zinc-900 dark:text-white">Free</span>
                     </div>
 
                     <div class="border-t border-zinc-200 dark:border-zinc-700 pt-2.5 flex justify-between items-baseline">
-                        <span class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider text-[11px]">Grand Total</span>
+                        <span class="font-semibold text-zinc-900 dark:text-white text-xs">Grand Total</span>
                         <span class="font-serif text-lg font-bold text-zinc-900 dark:text-white">${{ number_format($order->total_amount, 2) }}</span>
                     </div>
                 </div>

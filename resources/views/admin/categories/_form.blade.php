@@ -3,7 +3,7 @@
 <div class="space-y-5">
     {{-- Name --}}
     <div>
-        <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 mb-1.5">
+        <label for="name" class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             Category Name <span class="text-rose-500">*</span>
         </label>
         <input type="text" name="name" id="name" value="{{ old('name', $category->name ?? '') }}" required autofocus

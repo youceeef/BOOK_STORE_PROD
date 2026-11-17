@@ -36,7 +36,7 @@
                                 | Updated: {{ $book->updated_at->format('Y-m-d H:i') }}</p>
                             <div class="mt-4">
                                 <a href="{{ route('admin.books.edit', $book->id) }}"
-                                    class="bg-indigo-600 hover:bg-indigo-800 text-white font-bold py-2 px-4 rounded">
+                                    class="inline-flex items-center px-4 py-2 rounded-md text-xs font-medium text-white bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition shadow-xs">
                                     Edit Book
                                 </a>
                             </div>

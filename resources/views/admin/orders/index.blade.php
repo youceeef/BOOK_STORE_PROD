@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Sales & Fulfillment</span>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Sales & Fulfillment</p>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Customer Orders & Invoices</h1>
             </div>
         </div>
@@ -12,7 +12,7 @@
         <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left text-xs">
-                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                    <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 font-medium text-xs">
                         <tr>
                             <th class="px-5 py-3.5 font-semibold">Order ID</th>
                             <th class="px-5 py-3.5 font-semibold">Customer</th>
@@ -26,12 +26,12 @@
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                         @forelse ($orders as $order)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition">
-                                <td class="px-5 py-3.5 whitespace-nowrap font-mono text-xs font-bold text-zinc-900 dark:text-white">
+                                <td class="px-5 py-3.5 whitespace-nowrap text-xs font-semibold tabular-nums text-zinc-900 dark:text-white">
                                     #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap">
                                     <div class="font-medium text-zinc-900 dark:text-white">{{ $order->user?->name ?? 'Guest Buyer' }}</div>
-                                    <div class="text-[10px] text-zinc-400 font-mono">{{ $order->user?->email ?? 'N/A' }}</div>
+                                    <div class="text-[11px] text-zinc-400">{{ $order->user?->email ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap text-zinc-400 text-xs">
                                     {{ $order->created_at->format('M d, Y H:i') }}
@@ -39,7 +39,7 @@
                                 <td class="px-5 py-3.5 whitespace-nowrap">
                                     @php
                                         $statusClasses = match($order->status) {
-                                            'paid', 'completed' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                            'paid', 'completed' => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700',
                                             'shipped'           => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
                                             'pending'           => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
                                             'failed'            => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
@@ -67,7 +67,7 @@
                                     </a>
                                     <a href="{{ route('admin.orders.show', $order->id) }}"
                                         class="inline-flex items-center px-2.5 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                                        Review →
+                                        Review
                                     </a>
                                 </td>
                             </tr>

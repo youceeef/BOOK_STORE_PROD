@@ -55,11 +55,11 @@
             <div class="mb-6 bg-white dark:bg-[#12131a] rounded-lg p-4 border border-zinc-200 dark:border-zinc-800">
                 <div class="flex items-center justify-between text-xs mb-2">
                     @if ($subtotal >= $shippingThreshold)
-                        <span class="text-emerald-600 dark:text-emerald-400 font-medium">{{ __("You've unlocked FREE Tracked Delivery!") }}</span>
+                        <span class="text-zinc-900 dark:text-white font-medium">{{ __("You've unlocked FREE Tracked Delivery!") }}</span>
                     @else
                         <span class="text-zinc-600 dark:text-zinc-400">{{ __('Add') }} <span class="font-semibold text-zinc-900 dark:text-white">${{ number_format($amountNeeded, 2) }}</span> {{ __('more to unlock') }} <span class="font-medium text-zinc-900 dark:text-white">{{ __('Free Tracked Delivery') }}</span></span>
                     @endif
-                    <span class="text-zinc-500 font-mono text-[11px]">{{ $freeShippingProgress }}%</span>
+                    <span class="text-zinc-500 text-xs tabular-nums">{{ $freeShippingProgress }}%</span>
                 </div>
                 <div class="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
                     <div class="bg-zinc-900 dark:bg-white h-1.5 rounded-full transition-all duration-300"
@@ -225,7 +225,7 @@
                             </div>
 
                             @if ($discount > 0)
-                                <div class="flex justify-between text-emerald-600 dark:text-emerald-400">
+                                <div class="flex justify-between text-zinc-900 dark:text-white">
                                     <span>{{ __('Discount') }} ({{ $couponCode }})</span>
                                     <span class="font-semibold">-${{ number_format($discount, 2) }}</span>
                                 </div>
@@ -233,7 +233,7 @@
 
                             <div class="flex justify-between text-zinc-600 dark:text-zinc-400">
                                 <span>{{ __('Tracked Delivery') }}</span>
-                                <span class="font-medium {{ $subtotal >= $shippingThreshold ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-900 dark:text-zinc-100' }}">
+                                <span class="font-medium text-zinc-900 dark:text-white">
                                     {{ $subtotal >= $shippingThreshold ? 'FREE' : '$4.99' }}
                                 </span>
                             </div>
@@ -264,7 +264,7 @@
 
                     {{-- Coupon Voucher Card --}}
                     <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 p-4">
-                        <h3 class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-2.5">
+                        <h3 class="text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-2.5">
                             {{ __('Promotional Voucher') }}
                         </h3>
 
@@ -289,7 +289,7 @@
                             <div class="p-2.5 rounded-md bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
                                 <div class="flex items-center space-x-2 rtl:space-x-reverse">
                                     <span class="font-bold text-zinc-900 dark:text-white uppercase font-mono">{{ session('coupon')['code'] }}</span>
-                                    <span class="text-[10px] text-emerald-600 font-medium">({{ __('Applied') }})</span>
+                                    <span class="text-[10px] text-zinc-500 font-medium">({{ __('Applied') }})</span>
                                 </div>
                                 <form action="{{ route('coupon.destroy') }}" method="POST">
                                     @csrf

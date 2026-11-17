@@ -36,13 +36,13 @@
             {{-- Clean Status Indicator --}}
             <div class="flex-shrink-0 mt-0.5 text-xs font-bold">
                 <template x-if="toast.type === 'success'">
-                    <span class="text-emerald-600 dark:text-emerald-400">✓</span>
+                    <span class="text-zinc-900 dark:text-white">✓</span>
                 </template>
                 <template x-if="toast.type === 'error'">
                     <span class="text-rose-600 dark:text-rose-400">✕</span>
                 </template>
                 <template x-if="toast.type === 'info' || toast.type === 'warning'">
-                    <span class="text-zinc-600 dark:text-zinc-400">•</span>
+                    <span class="text-zinc-500 dark:text-zinc-400">•</span>
                 </template>
             </div>
 
@@ -51,7 +51,7 @@
                 <p class="text-xs font-medium text-zinc-900 dark:text-zinc-100 leading-snug" x-text="toast.message || toast.title"></p>
                 <template x-if="toast.actionUrl">
                     <a :href="toast.actionUrl" class="inline-block text-[11px] font-semibold text-zinc-900 dark:text-white underline mt-1.5 hover:text-zinc-600">
-                        <span x-text="toast.actionLabel || 'View →'"></span>
+                        <span x-text="toast.actionLabel || 'View'"></span>
                     </a>
                 </template>
             </div>

@@ -79,7 +79,7 @@
                     <button type="button"
                         class="w-48 lg:w-64 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-400 pl-8 pr-3 rtl:pl-3 rtl:pr-8 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 flex items-center justify-between text-left rtl:text-right transition-all">
                         <span class="truncate">{{ __('Search or press ⌘K...') }}</span>
-                        <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded pointer-events-none">⌘K</kbd>
+                        <kbd class="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded pointer-events-none">⌘K</kbd>
                     </button>
                     <svg class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 rtl:left-auto rtl:right-2.5 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -205,10 +205,10 @@
 
                             @if (Auth::user()->is_admin)
                                 <div class="py-1 border-t border-zinc-100 dark:border-zinc-800">
-                                    <span class="px-2.5 text-[10px] uppercase tracking-wider text-zinc-400 font-bold block mb-1">Store Management</span>
+                                    <span class="px-2.5 text-xs text-zinc-400 font-semibold block mb-1">Store Management</span>
                                     <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-between px-2.5 py-1.5 rounded-md font-semibold text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                         <span>{{ __('Admin Panel') }}</span>
-                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-mono">⌘</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">⌘</span>
                                     </a>
                                     <a href="{{ route('admin.books.index') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                         Manage Books
@@ -298,7 +298,7 @@
         <button type="button" @click="open = false; $dispatch('open-command-palette')"
             class="w-full bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-400 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-left rtl:text-right">
             <span>{{ __('Search or open command palette...') }}</span>
-            <kbd class="px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">⌘K</kbd>
+            <kbd class="px-1.5 py-0.5 text-[10px] text-zinc-400 bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded">⌘K</kbd>
         </button>
 
         <div class="flex items-center justify-between py-2 border-y border-zinc-100 dark:border-zinc-800 text-xs">

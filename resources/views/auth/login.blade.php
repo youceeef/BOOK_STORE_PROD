@@ -14,7 +14,7 @@
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email Address')" class="text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5" />
+            <x-input-label for="email" :value="__('Email Address')" class="text-xs font-medium text-gray-700 mb-1.5" />
             <x-text-input id="email" class="block w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="reader@example.com" />
             <x-input-error :messages="$errors->get('email')" class="mt-2" />
         </div>
@@ -22,7 +22,7 @@
         <!-- Password -->
         <div>
             <div class="flex items-center justify-between mb-1.5">
-                <x-input-label for="password" :value="__('Password')" class="text-xs font-semibold uppercase tracking-wider text-gray-700" />
+                <x-input-label for="password" :value="__('Password')" class="text-xs font-medium text-gray-700" />
                 @if (Route::has('password.request'))
                     <a class="text-xs text-gold-600 hover:text-gold-700 font-medium" href="{{ route('password.request') }}">
                         {{ __('Forgot password?') }}

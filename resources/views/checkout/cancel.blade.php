@@ -1,40 +1,34 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">
             {{ __('Payment Cancelled') }}
-        </h2>
+        </h1>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-lg mx-auto sm:px-6 lg:px-8 text-center">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-xl p-10">
+    <div class="max-w-xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
+        <div class="bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 p-8 sm:p-10 shadow-xs">
 
-                {{-- Icon --}}
-                <div class="flex justify-center mb-6">
-                    <div class="p-4 rounded-full bg-red-100 text-red-500">
-                        <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                </div>
+            {{-- Restrained Status Icon --}}
+            <div class="w-12 h-12 mx-auto mb-5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
 
-                <h1 class="text-2xl font-bold text-gray-900 mb-3">Payment Not Completed</h1>
-                <p class="text-gray-600 mb-8">
-                    Your payment was cancelled and you have not been charged.
-                    Your cart items are still saved — you can try again whenever you're ready.
-                </p>
+            <h2 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white mb-2">Checkout Incomplete</h2>
+            <p class="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mb-8 max-w-md mx-auto leading-relaxed">
+                Your checkout session was interrupted and you were not charged. Your reserved items remain in your bag so you can resume whenever convenient.
+            </p>
 
-                <div class="flex flex-col sm:flex-row gap-3 justify-center">
-                    <a href="{{ route('cart.index') }}"
-                        class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition duration-150">
-                        Return to Cart
-                    </a>
-                    <a href="{{ route('books.index') }}"
-                        class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition duration-150">
-                        Browse Books
-                    </a>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center text-xs">
+                <a href="{{ route('cart.index') }}"
+                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-md font-medium text-white bg-zinc-900 hover:bg-black dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-200 transition shadow-xs">
+                    Return to Bag
+                </a>
+                <a href="{{ route('books.index') }}"
+                    class="inline-flex items-center justify-center px-5 py-2.5 rounded-md font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+                    Browse Catalog
+                </a>
             </div>
         </div>
     </div>

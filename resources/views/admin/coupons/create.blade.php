@@ -2,12 +2,12 @@
     <x-slot name="header">
         <div class="flex items-center justify-between w-full">
             <div>
-                <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 dark:text-zinc-500 font-semibold block mb-0.5">Promotions</span>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5">Promotions</p>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Create Promotional Coupon</h1>
             </div>
             <a href="{{ route('admin.coupons.index') }}"
                 class="inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                ← Back to Coupons
+                Back to Coupons
             </a>
         </div>
     </x-slot>

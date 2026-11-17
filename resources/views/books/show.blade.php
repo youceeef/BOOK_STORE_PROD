@@ -65,7 +65,7 @@
                         </div>
                         <div class="py-2.5 flex justify-between">
                             <span class="text-zinc-500 dark:text-zinc-400">Availability</span>
-                            <span class="font-medium {{ $book->stock > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-zinc-400' }}">
+                            <span class="font-medium {{ $book->stock > 0 ? 'text-zinc-800 dark:text-zinc-200' : 'text-zinc-400' }}">
                                 {{ $book->stock > 0 ? __('In Stock') . " ({$book->stock})" : __('Out of Stock') }}
                             </span>
                         </div>
@@ -79,7 +79,7 @@
                         <div class="flex items-center space-x-2 rtl:space-x-reverse mb-3">
                             @if ($book->category)
                                 <a href="{{ route('categories.show', $book->category->slug) }}"
-                                    class="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
+                                    class="text-xs font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
                                     {{ $book->category->name }}
                                 </a>
                             @endif
@@ -390,7 +390,7 @@
                 @else
                     <a href="{{ route('login') }}"
                         class="inline-flex items-center px-4 py-2 rounded-md text-xs font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition self-start md:self-auto">
-                        Sign in to review →
+                        Sign in to review
                     </a>
                 @endauth
             </div>
@@ -441,7 +441,7 @@
                     </p>
 
                     @if ($isVerifiedBuyer)
-                        <div class="mb-5 p-3 rounded-md bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center">
+                        <div class="mb-5 p-3 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-800 dark:text-zinc-200 flex items-center">
                             <span class="font-bold mr-1.5 rtl:mr-0 rtl:ml-1.5">✓ Verified Buyer:</span>
                             You purchased this volume through Lara Bookstore. Your critique will receive an official Verified Buyer badge.
                         </div>
@@ -549,7 +549,7 @@
                                 </div>
 
                                 @if ($review->is_verified_purchase)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700">
                                         ✓ Verified Buyer
                                     </span>
                                 @endif
@@ -578,9 +578,9 @@
                         <div class="pt-2 flex items-center justify-between text-xs text-zinc-400">
                             <button type="button" @click="voteHelpful()" :disabled="voting || voted"
                                 class="inline-flex items-center space-x-1.5 rtl:space-x-reverse text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition"
-                                :class="voted ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : ''">
-                                <span>👍 Helpful</span>
-                                <span class="font-mono" x-text="`(${helpfulCount})`"></span>
+                                :class="voted ? 'text-zinc-900 dark:text-white font-semibold' : ''">
+                                <span>Helpful</span>
+                                <span class="tabular-nums" x-text="`(${helpfulCount})`"></span>
                             </button>
                         </div>
                     </div>
@@ -614,7 +614,7 @@
              ======================================================== --}}
         @if ($book->hasSample())
             <div x-show="readerOpen" x-cloak
-                class="fixed inset-0 z-50 overflow-hidden bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6"
+                class="fixed inset-0 z-50 overflow-hidden bg-black/70 flex items-center justify-center p-3 sm:p-6"
                 x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
@@ -644,7 +644,7 @@
                             'border-zinc-800 bg-zinc-900/60': readerTheme === 'dark'
                         }">
                         <div class="min-w-0 pr-4">
-                            <span class="text-[10px] uppercase font-mono tracking-wider opacity-70 block">Sample Excerpt</span>
+                            <span class="text-xs font-serif italic text-zinc-500 opacity-80 block">Sample Excerpt</span>
                             <h3 class="font-serif font-bold text-sm truncate">{{ $book->title }}</h3>
                         </div>
 
@@ -704,7 +704,7 @@
                             }">
 
                             <div class="text-center pb-6 mb-6 border-b border-current/10">
-                                <span class="text-[11px] uppercase font-mono tracking-widest opacity-60 block mb-1">Introductory Pages</span>
+                                <span class="text-xs font-serif italic text-zinc-500 opacity-80 block mb-1">First Edition Preview</span>
                                 <h1 class="font-serif text-2xl sm:text-3xl font-bold tracking-tight mb-2">{{ $book->title }}</h1>
                                 <p class="text-xs opacity-75">by {{ $book->author }}</p>
                             </div>

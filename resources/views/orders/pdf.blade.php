@@ -35,9 +35,8 @@
             margin: 0 0 4px 0;
         }
         .brand-subtitle {
-            font-size: 9.5px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            font-size: 10px;
+            font-style: italic;
             color: #71717a;
             margin: 0;
         }
@@ -60,15 +59,13 @@
         }
         .status-badge {
             display: inline-block;
-            padding: 2px 8px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            padding: 3px 8px;
+            font-size: 9.5px;
+            font-weight: 600;
             border-radius: 3px;
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
+            background: #f4f4f5;
+            color: #18181b;
+            border: 1px solid #e4e4e7;
         }
         .info-grid {
             width: 100%;
@@ -176,7 +173,7 @@
             font-weight: 600;
         }
         .totals-table tr.discount td {
-            color: #047857;
+            color: #18181b;
             font-weight: 600;
         }
         .totals-table tr.grand-total td {
@@ -317,7 +314,7 @@
                         @endif
                         <tr>
                             <td class="label">Tracked Shipping:</td>
-                            <td class="amount" style="color: #047857;">FREE ($0.00)</td>
+                            <td class="amount">FREE ($0.00)</td>
                         </tr>
                         <tr>
                             <td class="label">Tax (Included):</td>

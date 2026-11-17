@@ -60,7 +60,7 @@
 
                             <a href="{{ route('orders.show', $order->id) }}"
                                 class="inline-flex items-center px-3.5 py-1.5 rounded-md text-xs font-medium text-white bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-white transition shadow-sm">
-                                View Details →
+                                View Order
                             </a>
                         </div>
                     </div>

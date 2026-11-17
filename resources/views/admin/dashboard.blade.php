@@ -2,12 +2,10 @@
     <x-slot name="header">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
             <div>
-                <div class="flex items-center space-x-2.5 rtl:space-x-reverse mb-1">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 rtl:mr-0 rtl:ml-1.5 animate-pulse"></span>
-                        Live Dashboard
-                    </span>
-                    <span class="text-xs text-zinc-400 dark:text-zinc-500 font-mono">{{ now()->format('M d, Y') }}</span>
+                <div class="flex items-center space-x-2 rtl:space-x-reverse mb-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <span class="font-medium">Store Operations</span>
+                    <span>&bull;</span>
+                    <span class="tabular-nums">{{ now()->format('M d, Y') }}</span>
                 </div>
                 <h1 class="font-serif text-2xl font-bold text-zinc-900 dark:text-white">Store Analytics & Operations</h1>
             </div>
@@ -50,7 +48,7 @@
                 <p class="font-serif text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
                     ${{ number_format($revenue, 2) }}
                 </p>
-                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
+                <p class="text-xs text-zinc-400 dark:text-zinc-500 tabular-nums">
                     Avg. Order: ${{ number_format($avgOrderValue, 2) }}
                 </p>
             </div>
@@ -66,7 +64,7 @@
                 <p class="font-serif text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
                     {{ number_format($orderCount) }}
                 </p>
-                <p class="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono flex items-center">
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 flex items-center">
                     <span>Synchronous & tracked</span>
                 </p>
             </div>
@@ -82,7 +80,7 @@
                 <p class="font-serif text-2xl font-bold text-zinc-900 dark:text-white tracking-tight">
                     {{ number_format($bookCount) }}
                 </p>
-                <p class="text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
+                <p class="text-xs text-zinc-400 dark:text-zinc-500">
                     {{ count($categoryLabels) }} primary genres
                 </p>
             </div>
@@ -91,7 +89,7 @@
             <div class="bg-white dark:bg-[#12131a] p-5 rounded-lg border border-zinc-200 dark:border-zinc-800 space-y-1.5">
                 <div class="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                     <span class="font-medium">Inventory Health</span>
-                    <svg class="w-4 h-4 {{ $lowStockBooks->count() > 0 ? 'text-amber-500' : 'text-emerald-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-4 h-4 {{ $lowStockBooks->count() > 0 ? 'text-amber-500' : 'text-zinc-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
@@ -99,7 +97,7 @@
                     {{ $lowStockBooks->count() }}
                     <span class="text-xs font-sans font-normal text-zinc-500">low stock</span>
                 </p>
-                <p class="text-[11px] {{ $outOfStockCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400 dark:text-zinc-500' }} font-mono">
+                <p class="text-xs {{ $outOfStockCount > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400 dark:text-zinc-500' }}">
                     {{ $outOfStockCount > 0 ? $outOfStockCount . ' completely out of stock' : 'No depleted items' }}
                 </p>
             </div>
@@ -307,13 +305,13 @@
                     </div>
 
                     <a href="{{ route('admin.orders.index') }}" class="text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
-                        View All →
+                        View All
                     </a>
                 </div>
 
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800 text-left text-xs">
-                        <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                        <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-zinc-600 dark:text-zinc-400 font-medium text-xs">
                             <tr>
                                 <th class="px-5 py-3 font-semibold">Order</th>
                                 <th class="px-5 py-3 font-semibold">Customer</th>
@@ -326,12 +324,12 @@
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/80 text-zinc-700 dark:text-zinc-300">
                             @forelse ($recentOrders as $order)
                                 <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition">
-                                    <td class="px-5 py-3 font-mono font-medium text-zinc-900 dark:text-white">
+                                    <td class="px-5 py-3 font-medium tabular-nums text-zinc-900 dark:text-white">
                                         #ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}
                                     </td>
                                     <td class="px-5 py-3">
                                         <span class="font-medium text-zinc-900 dark:text-white block">{{ $order->user->name ?? 'Guest' }}</span>
-                                        <span class="text-[10px] text-zinc-400 font-mono">{{ $order->user->email ?? 'No email' }}</span>
+                                        <span class="text-[11px] text-zinc-400">{{ $order->user->email ?? 'No email' }}</span>
                                     </td>
                                     <td class="px-5 py-3 font-serif font-bold text-zinc-900 dark:text-white">
                                         ${{ number_format($order->total_amount, 2) }}
@@ -339,7 +337,7 @@
                                     <td class="px-5 py-3">
                                         @php
                                             $badgeClasses = match($order->status) {
-                                                'paid', 'completed' => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                                'paid', 'completed' => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700',
                                                 'shipped'           => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
                                                 'pending'           => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
                                                 'failed'            => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
@@ -356,7 +354,7 @@
                                     <td class="px-5 py-3 text-right">
                                         <a href="{{ route('admin.orders.show', $order->id) }}"
                                             class="inline-flex items-center px-2 py-1 rounded text-[11px] font-medium text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                                            Details →
+                                            Details
                                         </a>
                                     </td>
                                 </tr>
@@ -381,7 +379,7 @@
                             <p class="text-xs text-zinc-500 dark:text-zinc-400">Volumes needing restock (≤ 5 copies)</p>
                         </div>
                         <a href="{{ route('admin.books.index') }}" class="text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition">
-                            Catalog →
+                            Catalog
                         </a>
                     </div>
 
@@ -396,7 +394,7 @@
                                 </div>
 
                                 <div class="flex items-center space-x-2.5 rtl:space-x-reverse flex-shrink-0">
-                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-mono font-bold border {{ $lowBook->stock === 0 ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' }}">
+                                    <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium border {{ $lowBook->stock === 0 ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800' }}">
                                         {{ $lowBook->stock }} left
                                     </span>
                                     <a href="{{ route('admin.books.edit', $lowBook->id) }}"
@@ -417,7 +415,7 @@
                 <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800 mt-4">
                     <a href="{{ route('admin.books.create') }}"
                         class="w-full inline-flex items-center justify-center px-4 py-2 rounded-md text-xs font-medium text-zinc-800 dark:text-zinc-200 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition">
-                        + Add New Volume to Catalog
+                        Add New Volume
                     </a>
                 </div>
             </div>
