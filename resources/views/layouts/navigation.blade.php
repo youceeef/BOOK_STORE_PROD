@@ -1,39 +1,39 @@
-{{-- Announcement Bar: Quiet single-line literary strip --}}
-<div class="bg-zinc-950 text-zinc-400 text-[11px] py-1.5 px-4 border-b border-zinc-800 text-center font-normal no-print">
+{{-- Announcement Bar: Quiet ultra-slim literary strip --}}
+<div class="bg-zinc-950 text-zinc-400 text-[10.5px] py-1 px-4 border-b border-zinc-800/80 text-center font-normal no-print">
     <span>{{ __('Free Delivery on orders over $35') }} — {{ __('Curated Editions & Rare Finds') }}</span>
 </div>
 
-{{-- Main Navigation Bar: Slim 64px, architectural, crisp borders --}}
+{{-- Main Navigation Bar: Sleek, compact 54px, architectural, crisp borders --}}
 <nav x-data="{ open: false }" class="bg-white dark:bg-[#0e0f15] border-b border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 sticky top-0 z-50 transition-colors no-print">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between items-center h-16">
+        <div class="flex justify-between items-center h-13 sm:h-14">
             
             {{-- Left: Brand Logo & Navigation Links --}}
-            <div class="flex items-center space-x-8 rtl:space-x-reverse">
-                <a href="{{ route('home') }}" class="flex items-center space-x-2.5 rtl:space-x-reverse group">
-                    <span class="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center transition-transform group-hover:scale-105">
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center space-x-6 rtl:space-x-reverse">
+                <a href="{{ route('home') }}" class="flex items-center space-x-2 rtl:space-x-reverse group">
+                    <span class="w-7 h-7 rounded-md bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 flex items-center justify-center transition-transform group-hover:scale-105">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M12 3.75L3.75 6.75v12L12 15.75l8.25 3V6.75L12 3.75zM12 14.25l-6.75 2.25V7.875L12 5.625l6.75 2.25v8.625L12 14.25z"/>
                         </svg>
                     </span>
-                    <span class="font-serif text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+                    <span class="font-serif text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
                         BookStore
                     </span>
                 </a>
 
                 {{-- Desktop Nav Menu Links --}}
-                <div class="hidden lg:flex items-center space-x-1 rtl:space-x-reverse pl-2 rtl:pl-0 rtl:pr-2">
+                <div class="hidden lg:flex items-center space-x-1 rtl:space-x-reverse">
                     <a href="{{ route('books.index') }}"
-                        class="px-3 py-1.5 rounded-md text-sm font-medium transition {{ request()->routeIs('books.*') ? 'text-zinc-900 dark:text-white font-semibold bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' }}">
+                        class="px-2.5 py-1 rounded-md text-xs font-medium transition {{ request()->routeIs('books.*') ? 'text-zinc-900 dark:text-white font-semibold bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' }}">
                         {{ __('Explore Books') }}
                     </a>
 
                     {{-- Categories Dropdown Menu --}}
                     <div class="relative" x-data="{ catOpen: false }" @click.outside="catOpen = false">
                         <button @click="catOpen = !catOpen" type="button"
-                            class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition">
+                            class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition">
                             <span>{{ __('Browse Genres') }}</span>
-                            <svg class="ml-1 rtl:ml-0 rtl:mr-1 h-3.5 w-3.5 text-zinc-400 transition-transform duration-200" :class="{ 'rotate-180': catOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg class="ml-1 rtl:ml-0 rtl:mr-1 h-3 w-3 text-zinc-400 transition-transform duration-200" :class="{ 'rotate-180': catOpen }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
@@ -65,34 +65,9 @@
 
                     @auth
                         <a href="{{ route('orders.index') }}"
-                            class="px-3 py-1.5 rounded-md text-sm font-medium transition {{ request()->routeIs('orders.*') ? 'text-zinc-900 dark:text-white font-semibold bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' }}">
+                            class="px-2.5 py-1 rounded-md text-xs font-medium transition {{ request()->routeIs('orders.*') ? 'text-zinc-900 dark:text-white font-semibold bg-zinc-100 dark:bg-zinc-800' : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white' }}">
                             {{ __('My Orders') }}
                         </a>
-
-                        @if (Auth::user()->is_admin)
-                            <div class="relative pl-1 rtl:pl-0 rtl:pr-1" x-data="{ admOpen: false }" @click.outside="admOpen = false">
-                                <button @click="admOpen = !admOpen" type="button"
-                                    class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
-                                    <span>{{ __('Admin Panel') }}</span>
-                                    <svg class="ml-1 rtl:ml-0 rtl:mr-1 h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <div x-show="admOpen"
-                                    x-transition:enter="transition ease-out duration-100"
-                                    x-transition:enter-start="opacity-0 scale-95"
-                                    x-transition:enter-end="opacity-100 scale-100"
-                                    class="absolute left-0 rtl:left-auto rtl:right-0 z-50 mt-1.5 w-48 rounded-lg shadow-lg bg-white dark:bg-[#12131a] border border-zinc-200 dark:border-zinc-800 p-1.5 text-xs"
-                                    style="display: none;">
-                                    <a href="{{ route('admin.dashboard') }}" class="block px-3 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 font-medium">Dashboard</a>
-                                    <a href="{{ route('admin.books.index') }}" class="block px-3 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">Manage Books</a>
-                                    <a href="{{ route('admin.categories.index') }}" class="block px-3 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">Manage Categories</a>
-                                    <a href="{{ route('admin.orders.index') }}" class="block px-3 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">Orders & Sales</a>
-                                    <a href="{{ route('admin.coupons.index') }}" class="block px-3 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">Coupons & Promos</a>
-                                </div>
-                            </div>
-                        @endif
                     @endauth
                 </div>
             </div>
@@ -221,12 +196,31 @@
                             </div>
                             <div class="py-1">
                                 <a href="{{ route('profile.edit') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                                    Settings
+                                    {{ __('Settings') }}
                                 </a>
                                 <a href="{{ route('orders.index') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                                     {{ __('My Orders') }}
                                 </a>
+                                <a href="{{ route('wishlist.index') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                    {{ __('Saved Volumes') }}
+                                </a>
                             </div>
+
+                            @if (Auth::user()->is_admin)
+                                <div class="py-1 border-t border-zinc-100 dark:border-zinc-800">
+                                    <span class="px-2.5 text-[10px] uppercase tracking-wider text-zinc-400 font-bold block mb-1">Store Management</span>
+                                    <a href="{{ route('admin.dashboard') }}" class="flex items-center justify-between px-2.5 py-1.5 rounded-md font-semibold text-zinc-900 dark:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                        <span>{{ __('Admin Panel') }}</span>
+                                        <span class="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-mono">⌘</span>
+                                    </a>
+                                    <a href="{{ route('admin.books.index') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                        Manage Books
+                                    </a>
+                                    <a href="{{ route('admin.orders.index') }}" class="block px-2.5 py-1.5 rounded-md text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                                        Orders & Sales
+                                    </a>
+                                </div>
+                            @endif
                             <div class="pt-1">
                                 <form method="POST" action="{{ route('logout') }}">
                                     @csrf
@@ -333,8 +327,13 @@
                     {{ __('My Orders') }}
                 </a>
                 <a href="{{ route('profile.edit') }}" class="block px-2 py-1.5 rounded-md text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800">
-                    Account Settings
+                    {{ __('Account Settings') }}
                 </a>
+                @if (Auth::user()->is_admin)
+                    <a href="{{ route('admin.dashboard') }}" class="block px-2 py-1.5 rounded-md text-zinc-900 dark:text-white font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                        {{ __('Admin Panel') }}
+                    </a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}" class="pt-2">
                     @csrf
                     <button type="submit" class="w-full text-left rtl:text-right px-2 py-1.5 rounded-md text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30">

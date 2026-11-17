@@ -21,6 +21,10 @@ class CheckoutRequest extends FormRequest
     {
         return [
             'payment_method' => ['required', 'string', 'starts_with:pm_'],
+            'name' => ['nullable', 'string', 'max:255'],
+            'address' => ['nullable', 'string', 'max:255'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'postal_code' => ['nullable', 'string', 'max:50'],
         ];
     }
 

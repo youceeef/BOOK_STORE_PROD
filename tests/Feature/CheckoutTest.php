@@ -76,4 +76,28 @@ class CheckoutTest extends TestCase
         $response->assertRedirect(route('cart.index'));
         $response->assertSessionHas('error');
     }
+
+    public function test_user_can_view_order_history_with_orders(): void
+    {
+        $this->actingAs($this->user);
+
+        $order = \App\Models\Order::create([
+            'user_id' => $this->user->id,
+            'status' => 'paid',
+            'total_amount' => 22.00,
+            'stripe_payment_intent_id' => 'pi_test_12345',
+        ]);
+
+        $order->items()->create([
+            'book_id' => $this->book->id,
+            'quantity' => 1,
+            'price' => 22.00,
+        ]);
+
+        $response = $this->get(route('orders.index'));
+        $response->assertOk();
+        $response->assertSee('#ORD-');
+        $response->assertSee('22.00');
+        $response->assertSee('Paid');
+    }
 }

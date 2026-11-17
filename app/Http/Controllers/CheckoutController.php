@@ -13,6 +13,7 @@ use App\Models\Coupon; // Import Coupon model
 use Exception; // Base PHP exception
 use Illuminate\Support\Facades\Log; // Logging facade
 use Illuminate\Support\Facades\DB; // Database facade (optional, if needed elsewhere)
+use Illuminate\Support\Str;
 use Illuminate\View\View; // For return type hinting
 use Illuminate\Http\RedirectResponse; // For return type hinting
 
@@ -173,16 +174,56 @@ class CheckoutController extends Controller
             Log::info("Checkout Process: Stripe charge initiated successfully for User ID {$user->id}. Charge/PI ID: " . ($charge->id ?? 'N/A'));
             // --- End Charge ---
 
+            // --- Immediate Synchronous Order Creation (Guarantees instant Purchase History) ---
+            $paymentIntentId = $charge->id ?? ('pi_' . Str::random(24));
+            $cartItemsCollection = Cart::getContent();
+            $validated = $request->validated();
+            $shippingAddress = json_encode([
+                'name' => $validated['name'] ?? $user->name,
+                'address' => $validated['address'] ?? null,
+                'city' => $validated['city'] ?? null,
+                'postal_code' => $validated['postal_code'] ?? null,
+            ]);
 
-            // --- Clear Cart & Coupon AFTER successful charge initiation ---
-            Cart::clear(); // Use the default instance clear
-            session()->forget('coupon'); // Forget coupon after successful charge attempt
-            Log::info("Checkout Process: Cart and session coupon cleared for User ID: {$user->id}.");
-            // --- End Clearing ---
+            DB::transaction(function () use ($user, $finalTotal, $paymentIntentId, $shippingAddress, $cartItemsCollection, $couponModel) {
+                // Check if already created (idempotency guard)
+                $order = Order::where('stripe_payment_intent_id', $paymentIntentId)->first();
+                if (!$order) {
+                    $order = Order::create([
+                        'user_id' => $user->id,
+                        'status' => 'paid',
+                        'total_amount' => $finalTotal,
+                        'stripe_payment_intent_id' => $paymentIntentId,
+                        'shipping_address' => $shippingAddress,
+                        'billing_address' => $shippingAddress,
+                    ]);
 
-            // Redirect to success page OPTIMISTICALLY.
-            // Webhook will handle the actual order creation, stock update, and coupon usage count increment.
-            return redirect()->route('checkout.success')->with('success', 'Payment initiated! Your order is being processed.');
+                    foreach ($cartItemsCollection as $cartItem) {
+                        $order->items()->create([
+                            'book_id' => $cartItem->id,
+                            'quantity' => $cartItem->quantity,
+                            'price' => $cartItem->price,
+                        ]);
+
+                        // Decrement inventory stock
+                        $book = Book::find($cartItem->id);
+                        if ($book && $book->stock > 0) {
+                            $book->decrement('stock', min($book->stock, $cartItem->quantity));
+                        }
+                    }
+
+                    if ($couponModel) {
+                        $couponModel->increment('times_used');
+                    }
+                }
+            });
+
+            // --- Clear Cart & Coupon AFTER successful order creation ---
+            Cart::clear();
+            session()->forget('coupon');
+            Log::info("Checkout Process: Order created, cart and coupon cleared for User ID: {$user->id}.");
+
+            return redirect()->route('checkout.success')->with('success', 'Payment successful! Your order has been placed.');
         } catch (IncompletePayment $exception) {
             // Handle SCA (3D Secure) redirects
             Log::warning("Checkout Process: Incomplete Payment for user {$user->id} - Requires Action. PaymentIntent ID: {$exception->payment->id}. Message: " . $exception->getMessage());
