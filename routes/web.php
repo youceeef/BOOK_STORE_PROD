@@ -110,6 +110,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 });
 
 
+// Locale Switcher
+Route::get('/locale/{locale}', function (string $locale) {
+    if (in_array($locale, ['en', 'fr', 'ar'])) {
+        session(['locale' => $locale]);
+    }
+    return back();
+})->name('locale.switch');
+
 // --- Stripe Webhook ---
 
 // Note: Needs CSRF exemption in app/Http/Middleware/VerifyCsrfToken.php -> $except array
