@@ -246,6 +246,9 @@
                         @elseif ($order->billing_address)
                             {{ $order->billing_address }}<br>
                         @endif
+                        @if ($order->tracking_number)
+                            Tracking: <strong>{{ $order->carrier ? $order->carrier . ' ' : '' }}{{ $order->tracking_number }}</strong><br>
+                        @endif
                         Delivery Mode: Standard Insured Tracked
                     </div>
                 </td>

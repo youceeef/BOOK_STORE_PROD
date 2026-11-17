@@ -39,16 +39,23 @@
                                 <td class="px-5 py-3.5 whitespace-nowrap">
                                     @php
                                         $statusClasses = match($order->status) {
-                                            'paid', 'completed' => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border-zinc-200 dark:border-zinc-700',
-                                            'shipped'           => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-                                            'pending'           => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-                                            'failed'            => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
-                                            default             => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
+                                            'delivered'           => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                            'shipped'             => 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold',
+                                            'processing'          => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
+                                            'paid', 'completed'   => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                            'pending'             => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+                                            'cancelled', 'failed' => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+                                            default               => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
                                         };
                                     @endphp
                                     <span class="inline-block px-2 py-0.5 rounded text-[10px] font-medium border {{ $statusClasses }}">
                                         {{ ucfirst($order->status) }}
                                     </span>
+                                    @if ($order->tracking_number)
+                                        <span class="block text-[10px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">
+                                            {{ $order->tracking_number }}
+                                        </span>
+                                    @endif
                                 </td>
                                 <td class="px-5 py-3.5 whitespace-nowrap text-xs text-zinc-600 dark:text-zinc-400 font-medium">
                                     {{ $order->items_count }} {{ Str::plural('item', $order->items_count) }}

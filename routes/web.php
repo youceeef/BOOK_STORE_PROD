@@ -118,13 +118,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // --- Admin Order Management ---
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index'); // List all orders
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show'); // Show specific order
+    Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
     Route::get('/orders/{order}/invoice', [OrderController::class, 'downloadInvoice'])->name('orders.invoice'); // Download PDF Tax Invoice
 
-    // coupon management
-    Route::resource('coupons', AdminCouponController::class)->except(['show']); // Exclude show
-
-    // Future: Add routes for updating status if needed
-    // Route::patch('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('orders.updateStatus');
+    // Coupon management
+    Route::resource('coupons', AdminCouponController::class)->except(['show']);
 
 
 });

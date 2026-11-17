@@ -38,5 +38,42 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    // Add updateStatus() method later if needed
+    /**
+     * Update the fulfillment status and logistics tracking for the specified order.
+     */
+    public function updateStatus(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => 'required|in:pending,paid,processing,shipped,delivered,cancelled',
+            'carrier' => 'nullable|string|max:100',
+            'tracking_number' => 'nullable|string|max:100',
+            'estimated_delivery_at' => 'nullable|date',
+            'fulfillment_notes' => 'nullable|string|max:1000',
+        ]);
+
+        // Auto-assign sensible carrier & tracking number if admin sets to 'shipped' without entering one
+        if ($validated['status'] === 'shipped') {
+            if (empty($validated['carrier'])) {
+                $validated['carrier'] = $order->carrier ?: 'DHL Express';
+            }
+            if (empty($validated['tracking_number'])) {
+                $validated['tracking_number'] = $order->tracking_number ?: ('TRK-' . strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)));
+            }
+            if (empty($validated['estimated_delivery_at']) && empty($order->estimated_delivery_at)) {
+                $validated['estimated_delivery_at'] = now()->addDays(3)->toDateString();
+            }
+            if (!$order->shipped_at) {
+                $validated['shipped_at'] = now();
+            }
+        }
+
+        if ($validated['status'] === 'delivered' && !$order->delivered_at) {
+            $validated['delivered_at'] = now();
+        }
+
+        $order->update($validated);
+
+        return redirect()->route('admin.orders.show', $order)
+            ->with('success', "Order #ORD-" . str_pad($order->id, 5, '0', STR_PAD_LEFT) . " fulfillment updated to " . ucfirst($order->status) . ".");
+    }
 }
