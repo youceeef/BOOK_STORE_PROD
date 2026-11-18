@@ -6,6 +6,10 @@
 **Centre Sectoriel de Formation en Télécommunications de la Cité El Khadra (CSFTK Tunis)**  
 *Département Informatique & Développement Web*
 
+**Conceived, Architected & Developed by [Youssef Kaabechi](https://github.com/youceeef)**
+
+[![Author](https://img.shields.io/badge/Author-Youssef%20Kaabechi-10B981?style=for-the-badge&logo=github&logoColor=white)](https://github.com/youceeef)
+[![CSFTK Tunis](https://img.shields.io/badge/Exam%20Project-CSFTK%20Tunis-1E40AF?style=for-the-badge)](https://csftk.tn)
 [![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
@@ -19,49 +23,52 @@
 
 ---
 
-## 🏛️ Project Identification & Context
+## 🏛️ Project Identification & Academic Attribution
 
-| Attribute | Details |
+| Field | Details |
 | :--- | :--- |
+| **Project Title** | **BookStore · Curated Literary Marketplace & E-Commerce Platform** |
+| **Author & Developer** | **[Youssef Kaabechi](https://github.com/youceeef)** (Sole Author & Full-Stack Engineer) |
 | **Institution** | **CSFTK Tunis** (Centre Sectoriel de Formation en Télécommunications de la Cité El Khadra) |
-| **Project Nature** | **Individual Practical Exam Project** (Projet d'Examen Individuel) |
-| **Target Sector** | Modern Web Engineering, Enterprise E-Commerce, Concurrency & Security Architecture |
-| **Live Environment** | Hosted on **Railway Cloud** with MySQL, SSL termination, and Resend HTTPS mail integration |
+| **Academic Context** | **Individual Practical Final Exam Project** (*Projet d'Examen Pratique Individuel*) |
+| **Specialization** | Software Engineering, Enterprise Web Architecture & Distributed E-Commerce |
+| **Live Environment** | Deployed on **Railway Cloud** with MySQL, SSL termination, and Resend HTTPS mail integration |
 | **Production URL** | **[https://bookstores.up.railway.app](https://bookstores.up.railway.app)** |
 
-> [!NOTE]
-> This application was architected and implemented as an **individual capstone exam project** for **CSFTK Tunis**. It demonstrates mastery of modern full-stack web application development: domain modeling, database transaction isolation (pessimistic locking), multi-channel asynchronous authentication, third-party payment integration (Stripe), server-side PDF document generation, and rigorous test-driven verification.
+> [!IMPORTANT]
+> **Academic Declaration:**  
+> This application was exclusively designed, developed, and deployed by **Youssef Kaabechi** as an **individual practical exam project** for **CSFTK Tunis**. It reflects complete individual ownership across all project tiers: relational database modeling, transaction locking, multi-channel authentication, third-party payment integration (Stripe), server-side PDF document generation, and test-driven architecture.
 
 ---
 
 ## 🧭 Evaluator's & Jury Quick Guide
 
-For examiners, instructors, or evaluators wishing to test the platform without local setup, follow this 3-minute guided workflow on the [Live Production Deployment](https://bookstores.up.railway.app):
+For examiners, jury members, or evaluators wishing to test the platform on the [Live Production Deployment](https://bookstores.up.railway.app), use the pre-configured credentials below:
 
 ### 🔑 Pre-Seeded Evaluation Credentials
 
-| Role | Email | Password | Access Level |
+| Role | Email | Password | Access Privileges |
 | :--- | :--- | :--- | :--- |
 | **Administrator** | `admin@example.com` | `password` | Full Administrative Suite (`/admin`), inventory CRUD, fulfillment, and mailbox inspector |
-| **Verified Customer** | `customer@example.com` | `password` | Active customer with pre-loaded order history, wishlist, and shipping addresses |
+| **Verified Customer** | `customer@example.com` | `password` | Verified reader account with order history, address records, and wishlist |
 
-### 🧪 Suggested Evaluation Scenarios
+### 🧪 Guided Evaluation Scenarios
 
 1. **Reader Discovery & Reading Sample ("Look Inside"):**
-   - Navigate to `/books`, choose any title (e.g., *Threads of Fate*).
-   - Click **"Look Inside (Sample Excerpt)"** to launch the typography reader modal. Adjust font sizes, switch between Serif/Sans, and test full-screen reading mode.
+   - Open `/books`, click on any book (e.g., *Threads of Fate*).
+   - Click **"Look Inside (Sample Excerpt)"** to launch the interactive typography reader modal. Adjust font sizes, toggle between Serif/Sans, and test full-screen reading mode.
 2. **Persistent Wishlist & Guest Migration:**
-   - In an incognito window as a guest, click the heart icon on any 2 books.
-   - Go to `/login` and sign in as `customer@example.com` — notice that your guest wishlist items are automatically migrated and merged into the user account.
+   - In an incognito window as an unauthenticated guest, click the heart icon on any 2 books.
+   - Go to `/login` and sign in as `customer@example.com` — notice that your guest wishlist items are immediately migrated and merged into the user database record.
 3. **Cart & Promotional Coupon Engine:**
-   - Add books to the cart and apply coupon code `WELCOME10` (10% off) or `SAVE5` ($5 off). Subtotals, discounts, and tax calculate in real time.
+   - Add books to the cart and apply promotional coupon code `WELCOME10` (10% off) or `SAVE5` ($5 off). Subtotals, discounts, and tax calculate in real time.
 4. **Stripe Checkout & Automated PDF Invoicing:**
    - Complete checkout using Stripe demo cards.
    - View your order history under `/orders`, click **"Download Tax Invoice (PDF)"** to inspect the server-side generated DomPDF receipt.
 5. **Fulfillment Tracking Lifecycle:**
    - Sign in as `admin@example.com` and open `/admin/orders`.
    - Update an order from `Processing` to `Shipped`, assign carrier (`DHL Express`) and a tracking code.
-   - Switch back to customer view to see the interactive status timeline update.
+   - Switch back to customer view to see the interactive status tracker update.
 6. **60-Minute Signed Email Verification & Sandbox Simulator:**
    - Register a new account at `/register`. The account is immediately placed **On Hold** for 60 minutes.
    - To verify without waiting for external mail, click **"⚡ Activate Account Instantly"** on screen, or inspect incoming tokens at `/admin/mailbox`.
@@ -69,6 +76,8 @@ For examiners, instructors, or evaluators wishing to test the platform without l
 ---
 
 ## 📸 Visual Showcase
+
+*(All screenshots captured directly from the live production deployment)*
 
 ### 1. Curated Homepage & Editorial Catalog
 > Clean layout adhering to editorial design principles: Fraunces serif headlines, stone palette, search, genre filter pills, and live availability indicators.
@@ -80,7 +89,10 @@ For examiners, instructors, or evaluators wishing to test the platform without l
 ### 2. Book Detail, Excerpt Reader & Verified Buyer Reviews
 > Detailed bibliographic metadata, verified buyer ratings, helpfulness vote counters, and the interactive reading modal.
 
-![Book Details](docs/book-details.png)
+<p align="center">
+  <img src="docs/book-details.png" alt="Book Details" width="48%" />
+  <img src="docs/reader_modal.png" alt="Look Inside Reader Modal" width="48%" />
+</p>
 
 ---
 
@@ -101,22 +113,27 @@ For examiners, instructors, or evaluators wishing to test the platform without l
 
 ---
 
-### 5. Reader Onboarding & Authentication Security
-> Account security with real-time password strength verification, 60-minute signed activation links, and session revocation tools.
+### 5. Reader Onboarding & Profile Management
+> Account security with real-time password strength verification, 60-minute signed activation links, avatar uploads, and shipping address management.
 
 <p align="center">
   <img src="docs/register.png" alt="Reader Registration" width="48%" />
-  <img src="docs/login.png" alt="Reader Sign In" width="48%" />
+  <img src="docs/profile.png" alt="Reader Profile" width="48%" />
 </p>
 
 ---
 
 ### 6. Administrative Operations Suite
-> Full management control: sales analytics, inventory CRUD with image uploads, coupon parameters, and shipping tracking dispatch.
+> Full management control: sales analytics, inventory CRUD with image uploads, coupon parameters, and transactional mailbox inspection.
 
 <p align="center">
   <img src="docs/admin_dashboard.png" alt="Admin Dashboard" width="48%" />
   <img src="docs/admin_books.png" alt="Admin Book Management" width="48%" />
+</p>
+
+<p align="center">
+  <img src="docs/admin_categories.png" alt="Admin Categories" width="48%" />
+  <img src="docs/admin_mailbox.png" alt="Transactional Mailbox Inspector" width="48%" />
 </p>
 
 ---
@@ -275,11 +292,12 @@ php artisan test
 
 ---
 
-## 🧑‍💻 Author & Academic Attribution
+## 🧑‍💻 Author & Academic Credits
 
-- **Project:** BookStore · Curated Literary Marketplace & E-Commerce Platform
-- **Academic Context:** Individual Capstone & Practical Exam Project
+- **Full-Stack Developer & Author:** **[Youssef Kaabechi](https://github.com/youceeef)**
+- **Academic Context:** Individual Practical Final Exam Project (*Projet d'Examen Pratique Individuel*)
 - **Institution:** **CSFTK Tunis** (Centre Sectoriel de Formation en Télécommunications de la Cité El Khadra)
+- **Département:** Informatique & Développement Web
 - **Year of Presentation:** 2026
 - **Repository:** [https://github.com/youceeef/BOOK_STORE_PROD](https://github.com/youceeef/BOOK_STORE_PROD)
 - **License:** Open-source software licensed under the [MIT License](LICENSE).
