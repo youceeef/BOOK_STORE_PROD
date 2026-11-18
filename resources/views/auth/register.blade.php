@@ -15,9 +15,9 @@
             passwordConfirmation: '',
             get hasLength() { return this.password.length >= 8; },
             get hasUpper() { return /[A-Z]/.test(this.password) && /[a-z]/.test(this.password); },
-            get hasNumber() { return /[0-9!@#$%^&*(),.?\":{}|<>]/.test(this.password); },
+            get hasNumber() { return /\d|[^\w\s]/.test(this.password); },
             get isStrong() { return this.hasLength && this.hasUpper && this.hasNumber; },
-            get isMatching() { return this.password && this.password === this.passwordConfirmation; }
+            get isMatching() { return this.password.length > 0 && this.password === this.passwordConfirmation; }
         }">
         @csrf
 

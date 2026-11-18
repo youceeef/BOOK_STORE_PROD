@@ -32,7 +32,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(RouteServiceProvider::HOME);
+        $response->assertRedirect(route('verification.notice'));
 
         $user = User::where('email', 'test@example.com')->first();
         $this->assertNotNull($user);

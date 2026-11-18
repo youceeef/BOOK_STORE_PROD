@@ -49,6 +49,6 @@ class RegisteredUserController extends Controller
         // Synchronize guest session wishlist to newly registered account
         app(\App\Services\WishlistService::class)->syncGuestWishlist($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        return redirect()->route('verification.notice');
     }
 }

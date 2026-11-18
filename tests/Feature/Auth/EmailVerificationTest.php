@@ -43,7 +43,7 @@ class EmailVerificationTest extends TestCase
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(RouteServiceProvider::HOME.'?verified=1');
+        $response->assertRedirect(route('home'));
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void
@@ -92,6 +92,61 @@ class EmailVerificationTest extends TestCase
         ]);
 
         $response = $this->actingAs($user)->post('/email/verification-notification');
+
+        $response->assertSessionHas('status', 'verification-link-sent');
+        $this->assertNotNull(cache()->get('latest_verification_' . $user->id));
+    }
+
+    public function test_expired_verification_link_shows_expired_page(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        // Generate expired signed URL (expired 10 minutes ago)
+        $expiredUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->subMinutes(10),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        $response = $this->get($expiredUrl);
+
+        $response->assertStatus(403);
+        $response->assertSee('Verification Link Expired');
+        $response->assertSee($user->email);
+        $this->assertFalse($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_unauthenticated_user_can_verify_email_via_signed_link(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['id' => $user->id, 'hash' => sha1($user->email)]
+        );
+
+        // Guest visits the link
+        $response = $this->get($verificationUrl);
+
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+        $this->assertAuthenticatedAs($user);
+        $response->assertRedirect(route('home'));
+    }
+
+    public function test_guest_can_resend_verification_email(): void
+    {
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $response = $this->post('/email/verification-notification', [
+            'email' => $user->email,
+        ]);
 
         $response->assertSessionHas('status', 'verification-link-sent');
         $this->assertNotNull(cache()->get('latest_verification_' . $user->id));

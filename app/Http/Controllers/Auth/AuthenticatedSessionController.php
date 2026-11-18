@@ -27,10 +27,16 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = $request->user();
+
         // Synchronize guest session wishlist to authenticated account
-        app(\App\Services\WishlistService::class)->syncGuestWishlist($request->user());
+        app(\App\Services\WishlistService::class)->syncGuestWishlist($user);
 
         $request->session()->regenerate();
+
+        if (! $user->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
 
         return redirect()->intended(RouteServiceProvider::HOME);
     }
