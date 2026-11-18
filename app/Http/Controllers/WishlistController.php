@@ -77,14 +77,26 @@ class WishlistController extends Controller
     {
         $book = Book::findOrFail($bookId);
 
-        if ($book->stock < 1) {
+        $existingItem = Cart::get($book->id);
+        $existingQty = $existingItem ? (int) $existingItem->quantity : 0;
+        $totalRequestedQty = $existingQty + 1;
+
+        if ($book->stock < $totalRequestedQty) {
+            $msg = $book->stock <= 0
+                ? __('This volume is currently out of stock.')
+                : __('Not enough stock available for ":title". Only :stock left (:qty already in bag).', [
+                    'title' => $book->title,
+                    'stock' => $book->stock,
+                    'qty' => $existingQty,
+                ]);
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => __('This volume is currently out of stock.')
+                    'message' => $msg
                 ], 422);
             }
-            return back()->with('error', __('This volume is currently out of stock.'));
+            return back()->with('error', $msg);
         }
 
         // Add to bag
@@ -94,7 +106,7 @@ class WishlistController extends Controller
             'price' => $book->price,
             'quantity' => 1,
             'attributes' => [
-                'image' => $book->cover_image ?: 'images/covers/default.png',
+                'image' => $book->cover_url,
                 'slug' => $book->slug,
                 'stock' => $book->stock
             ]

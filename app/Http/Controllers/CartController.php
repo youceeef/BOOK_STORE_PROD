@@ -35,15 +35,23 @@ class CartController extends Controller
 
         $book = Book::findOrFail($request->book_id);
 
-        // Check if enough stock is available
-        if ($book->stock < $request->quantity) {
+        // Check if enough stock is available considering cumulative cart quantity
+        $existingItem = Cart::get($book->id);
+        $existingQty = $existingItem ? (int) $existingItem->quantity : 0;
+        $totalRequestedQty = $existingQty + (int) $request->quantity;
+
+        if ($book->stock < $totalRequestedQty) {
+            $msg = $book->stock <= 0
+                ? 'Sorry, "' . $book->title . '" is out of stock.'
+                : 'Not enough stock available for "' . $book->title . '". Only ' . $book->stock . ' left (' . $existingQty . ' already in your bag).';
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Not enough stock available for "' . $book->title . '". Only ' . $book->stock . ' left.'
+                    'message' => $msg
                 ], 422);
             }
-            return back()->with('error', 'Not enough stock available for "' . $book->title . '". Only ' . $book->stock . ' left.');
+            return back()->with('error', $msg);
         }
 
         Cart::add([
@@ -52,10 +60,15 @@ class CartController extends Controller
             'price' => $book->price,
             'quantity' => $request->quantity,
             'attributes' => [
-                'image' => $book->cover_image ?: 'images/covers/default.png',
+                'image' => $book->cover_url,
                 'slug' => $book->slug,
-                'stock' => $book->stock // Store original stock for reference if needed
+                'stock' => $book->stock
             ]
+        ]);
+
+        // Ensure row reflects current database price
+        Cart::update($book->id, [
+            'price' => $book->price,
         ]);
 
         if ($request->wantsJson()) {

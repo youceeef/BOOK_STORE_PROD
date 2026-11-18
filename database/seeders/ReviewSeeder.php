@@ -12,6 +12,10 @@ class ReviewSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->isProduction()) {
+            return;
+        }
+
         $books = Book::all();
         if ($books->isEmpty()) {
             return;

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Book extends Model
 {
@@ -130,5 +131,25 @@ class Book extends Model
     public function availableStock(?string $sessionId = null, ?int $userId = null): int
     {
         return \App\Services\StockReservationService::getAvailableStock($this, $sessionId, $userId);
+    }
+
+    public function getCoverUrlAttribute(): string
+    {
+        if (!$this->cover_image) {
+            return asset('images/covers/default.png');
+        }
+
+        if (str_starts_with($this->cover_image, 'http://') || str_starts_with($this->cover_image, 'https://')) {
+            return $this->cover_image;
+        }
+
+        if (str_starts_with($this->cover_image, 'images/')) {
+            return asset($this->cover_image);
+        }
+
+        $mediaDisk = config('filesystems.media_disk', 'public');
+        $relative = ltrim(str_replace('/storage/', '', $this->cover_image), '/');
+
+        return Storage::disk($mediaDisk)->url($relative);
     }
 }

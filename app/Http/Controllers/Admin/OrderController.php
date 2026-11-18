@@ -4,21 +4,53 @@ namespace App\Http\Controllers\Admin; // Correct namespace
 
 use App\Http\Controllers\Controller;
 use App\Models\Order; // Import Order model
+use App\Models\Book;
+use App\Models\Coupon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
     /**
      * Display a listing of all orders.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        // Fetch all orders, newest first, with user relationship and item count
-        $orders = Order::with('user') // Eager load the user who placed the order
-            ->withCount('items') // Eager load the count of items
-            ->latest() // Order by creation date descending
-            ->paginate(20); // Show more per page for admin
+        $query = Order::with('user')->withCount('items');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                if (is_numeric($search)) {
+                    $q->orWhere('id', (int) $search);
+                }
+                $q->orWhere('customer_name_snapshot', 'LIKE', "%{$search}%")
+                  ->orWhere('customer_email_snapshot', 'LIKE', "%{$search}%")
+                  ->orWhereHas('user', function ($uq) use ($search) {
+                      $uq->where('name', 'LIKE', "%{$search}%")
+                         ->orWhere('email', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        if ($paymentStatus = $request->input('payment_status')) {
+            $query->where('payment_status', $paymentStatus);
+        }
+
+        if ($fulfillmentStatus = $request->input('fulfillment_status')) {
+            $query->where('fulfillment_status', $fulfillmentStatus);
+        }
+
+        if ($dateFrom = $request->input('date_from')) {
+            $query->whereDate('created_at', '>=', $dateFrom);
+        }
+
+        if ($dateTo = $request->input('date_to')) {
+            $query->whereDate('created_at', '<=', $dateTo);
+        }
+
+        $orders = $query->latest()->paginate(20)->withQueryString();
 
         return view('admin.orders.index', compact('orders'));
     }
@@ -70,6 +102,47 @@ class OrderController extends Controller
         if ($validated['status'] === 'delivered' && !$order->delivered_at) {
             $validated['delivered_at'] = now();
         }
+
+        // Handle Order Cancellation & Inventory/Payment Compensation
+        if ($validated['status'] === 'cancelled' && $order->status !== 'cancelled') {
+            DB::transaction(function () use ($order, &$validated) {
+                // 1. If order was paid via Stripe, process refund
+                if ($order->payment_status === 'paid' && $order->stripe_payment_intent_id) {
+                    try {
+                        if ($order->user && method_exists($order->user, 'refund')) {
+                            $order->user->refund($order->stripe_payment_intent_id);
+                        }
+                    } catch (\Throwable $e) {
+                        Log::warning("Stripe refund failed for Order #{$order->id}: " . $e->getMessage());
+                    }
+                    $validated['payment_status'] = 'refunded';
+                    $validated['refunded_amount'] = $order->total_amount;
+                }
+
+                // 2. Restore book inventory
+                foreach ($order->items as $item) {
+                    $book = Book::where('id', $item->book_id)->lockForUpdate()->first();
+                    if ($book) {
+                        $book->increment('stock', $item->quantity);
+                    }
+                }
+
+                // 3. Compensate coupon usage if used
+                if ($order->coupon_code) {
+                    $coupon = Coupon::where('code', $order->coupon_code)->lockForUpdate()->first();
+                    if ($coupon && $coupon->usage_count > 0) {
+                        $coupon->decrement('usage_count');
+                    }
+                }
+
+                $validated['cancelled_at'] = now();
+                $validated['fulfillment_status'] = 'cancelled';
+            });
+        }
+
+        $validated['fulfillment_status'] = in_array($validated['status'], ['processing', 'shipped', 'delivered', 'cancelled'])
+            ? $validated['status']
+            : ($order->fulfillment_status ?: 'unfulfilled');
 
         $order->update($validated);
 

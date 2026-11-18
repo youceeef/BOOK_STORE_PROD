@@ -151,4 +151,20 @@ class EmailVerificationTest extends TestCase
         $response->assertSessionHas('status', 'verification-link-sent');
         $this->assertNotNull(cache()->get('latest_verification_' . $user->id));
     }
+
+    public function test_verification_prompt_and_notification_do_not_leak_url_in_production(): void
+    {
+        $this->app['env'] = 'production';
+        $user = User::factory()->create([
+            'email_verified_at' => null,
+        ]);
+
+        $promptResponse = $this->actingAs($user)->get('/verify-email');
+        $promptResponse->assertOk();
+        $promptResponse->assertDontSee('Testing Sandbox Shortcut');
+        $promptResponse->assertDontSee('Activate Account Instantly');
+
+        $this->actingAs($user)->post('/email/verification-notification');
+        $this->assertNull(cache()->get('latest_verification_' . $user->id));
+    }
 }

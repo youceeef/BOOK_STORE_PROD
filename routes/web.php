@@ -43,6 +43,21 @@ Route::get('/api/search/palette', [BookController::class, 'paletteSearch'])->nam
 // --- Public Category Browsing ---
 Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->name('categories.show'); // <-- Add this route
 
+// --- XML Sitemap for SEO ---
+Route::get('/sitemap.xml', function () {
+    $books = \App\Models\Book::whereHas('category', fn($q) => $q->where('active', 1))
+        ->select('slug', 'updated_at')
+        ->latest('updated_at')
+        ->get();
+    $categories = \App\Models\Category::where('active', 1)
+        ->select('slug', 'updated_at')
+        ->get();
+
+    return response()
+        ->view('sitemap', compact('books', 'categories'))
+        ->header('Content-Type', 'text/xml');
+})->name('sitemap');
+
 // Shopping Cart Routes (Generally accessible)
 Route::prefix('cart')->name('cart.')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');         // Show Cart
@@ -93,6 +108,7 @@ Route::middleware(['auth', 'verified'])->group(function () { // 'verified' is op
     Route::post('/checkout', [CheckoutController::class, 'process'])
         ->middleware('throttle:15,1')
         ->name('checkout.process');
+    Route::get('/checkout/return/{order}', [CheckoutController::class, 'return'])->name('checkout.return');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
     Route::get('/checkout/cancel', [CheckoutController::class, 'cancel'])->name('checkout.cancel'); // Optional cancel page
 
@@ -144,7 +160,9 @@ Route::get('/locale/{locale}', function (string $locale) {
 // --- Stripe Webhook ---
 
 // Note: Needs CSRF exemption in app/Http/Middleware/VerifyCsrfToken.php -> $except array
-Route::post('/stripe/webhook', [App\Http\Controllers\WebhookController::class, 'handleWebhook'])->name('cashier.webhook');
+Route::post('/stripe/webhook', [App\Http\Controllers\WebhookController::class, 'handleWebhook'])
+    ->middleware(\App\Http\Middleware\VerifyStripeWebhookSignature::class)
+    ->name('cashier.webhook');
 
 // --- Breeze Authentication Routes ---
 

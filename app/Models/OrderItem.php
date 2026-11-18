@@ -13,9 +13,21 @@ class OrderItem extends Model
     protected $fillable = [
         'order_id',
         'book_id',
+        'title_snapshot',
+        'author_snapshot',
         'quantity',
         'price'
     ];
+
+    public function getTitleAttribute(): string
+    {
+        return $this->title_snapshot ?? $this->book?->title ?? 'Archived Book';
+    }
+
+    public function getAuthorAttribute(): string
+    {
+        return $this->author_snapshot ?? $this->book?->author ?? 'Independent Author';
+    }
 
     // An OrderItem belongs to an Order
     public function order(): BelongsTo

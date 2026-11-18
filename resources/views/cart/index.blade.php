@@ -140,6 +140,9 @@
                                     <div class="w-16 h-22 flex-shrink-0 bg-zinc-100 dark:bg-zinc-900 rounded p-1 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
                                         <img src="{{ asset($item->attributes->image ?: 'images/covers/default.png') }}"
                                             alt="{{ $item->name }}"
+                                            width="64"
+                                            height="88"
+                                            loading="lazy"
                                             class="max-h-full max-w-full object-contain">
                                     </div>
                                     <div class="flex-1 min-w-0">

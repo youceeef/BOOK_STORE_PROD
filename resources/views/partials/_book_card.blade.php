@@ -6,8 +6,10 @@
         {{-- Cover Presentation: Clean frame, unoccluded artwork --}}
         <div class="block relative aspect-[3/4] bg-zinc-100/70 dark:bg-zinc-900/50 p-5 overflow-hidden">
             <a href="{{ route('books.show', $book->slug) }}" class="w-full h-full flex items-center justify-center">
-                <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
+                <img src="{{ $book->cover_url }}"
                     alt="{{ $book->title }}"
+                    width="300"
+                    height="400"
                     loading="lazy"
                     class="max-h-full max-w-full object-contain shadow-sm group-hover:scale-[1.02] transition-transform duration-300">
             </a>

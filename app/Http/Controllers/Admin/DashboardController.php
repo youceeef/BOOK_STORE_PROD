@@ -20,9 +20,15 @@ class DashboardController extends Controller
         $bookCount  = Book::count();
         $orderCount = Order::count();
         $userCount  = User::count();
-        $revenue    = (float) Order::where('status', 'paid')->sum('total_amount');
+        $revenue    = (float) Order::where(function ($q) {
+            $q->where('payment_status', 'paid')
+              ->orWhereIn('status', ['paid', 'processing', 'shipped', 'delivered']);
+        })->sum('total_amount');
 
-        $paidOrderCount = Order::where('status', 'paid')->count();
+        $paidOrderCount = Order::where(function ($q) {
+            $q->where('payment_status', 'paid')
+              ->orWhereIn('status', ['paid', 'processing', 'shipped', 'delivered']);
+        })->count();
         $avgOrderValue = $paidOrderCount > 0 ? $revenue / $paidOrderCount : 0;
         $outOfStockCount = Book::where('stock', 0)->count();
 
@@ -39,7 +45,9 @@ class DashboardController extends Controller
             $chartLabels[] = $label;
 
             $dayOrders = Order::whereDate('created_at', $dateStr)->get();
-            $dayRevenue = $dayOrders->where('status', 'paid')->sum('total_amount');
+            $dayRevenue = $dayOrders->filter(function ($order) {
+                return $order->payment_status === 'paid' || in_array($order->status, ['paid', 'processing', 'shipped', 'delivered']);
+            })->sum('total_amount');
 
             $revenueData[] = (float) number_format($dayRevenue, 2, '.', '');
             $ordersData[] = $dayOrders->count();

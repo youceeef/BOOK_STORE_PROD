@@ -22,21 +22,29 @@
                 @foreach ($orders as $order)
                     <div class="bg-white dark:bg-[#12131a] rounded-lg p-5 border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div class="space-y-1">
-                            <div class="flex items-center space-x-2.5 rtl:space-x-reverse">
+                            <div class="flex flex-wrap items-center gap-2">
                                 <span class="font-mono text-xs font-semibold text-zinc-900 dark:text-white">#ORD-{{ str_pad($order->id, 5, '0', STR_PAD_LEFT) }}</span>
                                 @php
-                                    $statusClasses = match($order->status) {
-                                        'delivered'           => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-                                        'shipped'             => 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold',
-                                        'processing'          => 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800',
-                                        'paid', 'completed'   => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
-                                        'pending'             => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-                                        'cancelled', 'failed' => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
-                                        default               => 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800',
+                                    $payClasses = match($order->payment_status) {
+                                        'paid'      => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                        'pending'   => 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
+                                        'refunded'  => 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800',
+                                        'failed'    => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+                                        default     => 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800',
+                                    };
+                                    $fulClasses = match($order->fulfillment_status) {
+                                        'delivered'   => 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800',
+                                        'shipped'     => 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 border-zinc-900 dark:border-white font-semibold',
+                                        'unfulfilled' => 'bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700',
+                                        'cancelled'   => 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800',
+                                        default       => 'bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-800',
                                     };
                                 @endphp
-                                <span class="px-2 py-0.5 rounded text-[11px] font-medium border {{ $statusClasses }}">
-                                    {{ ucfirst($order->status) }}
+                                <span class="px-2 py-0.5 rounded text-[10px] font-medium border {{ $payClasses }}">
+                                    {{ ucfirst($order->payment_status ?? 'pending') }}
+                                </span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-medium border {{ $fulClasses }}">
+                                    {{ ucfirst($order->fulfillment_status ?? 'unfulfilled') }}
                                 </span>
                                 @if ($order->tracking_number)
                                     <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">

@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'BookStore') }} — Curated Reads & Literary Finds</title>
+    <title>{{ isset($title) ? $title . ' — ' . config('app.name', 'BookStore') : config('app.name', 'BookStore') . ' — ' . __('Curated Reads & Literary Finds') }}</title>
+    <meta name="description" content="{{ $metaDescription ?? 'Discover curated books, literary treasures, and editorial recommendations at BookStore.' }}">
+    <link rel="canonical" href="{{ $canonicalUrl ?? url()->current() }}">
 
     <!-- Google Fonts: Inter, Playfair Display, Noto Sans Arabic, Amiri (DESIGN.md Editorial System) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -143,6 +145,8 @@
             });
         </script>
     @endif
+
+    @stack('scripts')
 </body>
 
 </html>

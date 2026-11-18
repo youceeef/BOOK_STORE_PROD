@@ -241,11 +241,7 @@
                     <div class="info-box">
                         <strong>{{ $order->user?->name ?? 'Valued Customer' }}</strong><br>
                         {{ $order->user?->email }}<br>
-                        @if ($order->shipping_address)
-                            {{ $order->shipping_address }}<br>
-                        @elseif ($order->billing_address)
-                            {{ $order->billing_address }}<br>
-                        @endif
+                        {{ $order->formatted_shipping_address }}<br>
                         @if ($order->tracking_number)
                             Tracking: <strong>{{ $order->carrier ? $order->carrier . ' ' : '' }}{{ $order->tracking_number }}</strong><br>
                         @endif

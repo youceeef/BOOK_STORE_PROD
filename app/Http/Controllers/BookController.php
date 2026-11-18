@@ -16,6 +16,7 @@ class BookController extends Controller
     {
         $query = Book::query()
             ->with('category')
+            ->whereHas('category', fn($q) => $q->where('active', 1))
             ->withAvg('reviews', 'rating')
             ->withCount('reviews');
 
@@ -36,7 +37,7 @@ class BookController extends Controller
         // Category Filter
         if ($selectedCategory) {
             $query->whereHas('category', function ($q) use ($selectedCategory) {
-                $q->where('slug', $selectedCategory);
+                $q->where('slug', $selectedCategory)->where('active', 1);
             });
         }
 
@@ -76,6 +77,10 @@ class BookController extends Controller
     {
         $book->load(['category', 'reviews.user']);
 
+        if ($book->category && !$book->category->active) {
+            abort(404);
+        }
+
         $userReview = auth()->check() ? $book->reviews->where('user_id', auth()->id())->first() : null;
         $isVerifiedBuyer = auth()->check() ? auth()->user()->hasPurchased($book) : false;
         $ratingBreakdown = $book->ratingBreakdown();
@@ -86,6 +91,7 @@ class BookController extends Controller
             ->where('category_id', $book->category_id)
             ->where('id', '!=', $book->id)
             ->where('stock', '>', 0)
+            ->whereHas('category', fn($q) => $q->where('active', 1))
             ->take(4)
             ->get();
 

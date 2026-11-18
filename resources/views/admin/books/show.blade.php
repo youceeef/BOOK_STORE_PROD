@@ -17,7 +17,7 @@
                 <div class="p-6 md:p-8 text-gray-900">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="md:col-span-1">
-                            <img src="{{ $book->cover_image ?: asset('images/covers/default.png') }}"
+                            <img src="{{ $book->cover_url }}"
                                 alt="{{ $book->title }}" class="w-full h-auto object-contain border rounded">
                         </div>
                         <div class="md:col-span-2 space-y-3">

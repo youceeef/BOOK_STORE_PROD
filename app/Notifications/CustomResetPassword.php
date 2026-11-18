@@ -20,11 +20,13 @@ class CustomResetPassword extends BaseResetPassword
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        // Record in cache for demo sandbox testing
-        cache()->put('latest_password_reset_' . md5(strtolower($notifiable->getEmailForPasswordReset())), $url, now()->addHours(2));
+        if (!app()->isProduction()) {
+            // Record in cache for demo sandbox testing
+            cache()->put('latest_password_reset_' . md5(strtolower($notifiable->getEmailForPasswordReset())), $url, now()->addHours(2));
 
-        // Record into admin mail log for demonstration inspector
-        $this->recordToMailbox($notifiable->getEmailForPasswordReset(), 'Password Recovery Instructions', $url, 'password_reset');
+            // Record into admin mail log for demonstration inspector
+            $this->recordToMailbox($notifiable->getEmailForPasswordReset(), 'Password Recovery Instructions', $url, 'password_reset');
+        }
 
         return (new MailMessage)
             ->subject('Password Recovery Instructions · BookStore')

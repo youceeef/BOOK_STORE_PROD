@@ -211,7 +211,7 @@
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center space-x-3.5 rtl:space-x-reverse">
                                         <div class="w-10 h-14 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 border border-zinc-200 dark:border-zinc-800 p-0.5 flex items-center justify-center">
-                                            <img src="{{ asset($item->book?->cover_image ?: 'images/covers/default.png') }}"
+                                            <img src="{{ $item->book?->cover_url ?: asset('images/covers/default.png') }}"
                                                 alt="{{ $item->book?->title ?? 'Book' }}" class="max-h-full max-w-full object-contain">
                                         </div>
                                         <div>

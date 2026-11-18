@@ -17,7 +17,7 @@
 
                 {{-- Shelf Quick Selectors --}}
                 <div class="flex flex-wrap items-center gap-1.5 self-start md:self-end">
-                    @foreach (cache()->remember('active_categories', 3600, fn() => \App\Models\Category::where('active', 1)->take(4)->get()) as $cat)
+                    @foreach ($categories->take(4) as $cat)
                         <a href="{{ route('books.index', ['category' => $cat->slug]) }}"
                             class="text-xs px-3 py-1.5 rounded-md bg-white dark:bg-[#12131a] hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 transition">
                             {{ $cat->name }}
@@ -37,7 +37,7 @@
                     @if (request('search'))
                         {{ __('Search Results for') }} <span class="italic text-zinc-600 dark:text-zinc-400">"{{ request('search') }}"</span>
                     @elseif (request('category'))
-                        @php $activeCategory = \App\Models\Category::where('slug', request('category'))->first(); @endphp
+                        @php $activeCategory = request('category') ? $categories->firstWhere('slug', request('category')) : null; @endphp
                         {{ __('Shelf') }}: <span>{{ $activeCategory->name ?? ucfirst(request('category')) }}</span>
                     @else
                         {{ __('The Book Collection') }}
@@ -58,7 +58,7 @@
                 <select name="category" onchange="document.getElementById('filter-form').submit();"
                     class="text-xs font-medium rounded-md border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 py-1.5 pl-2.5 pr-7 rtl:pl-7 rtl:pr-2.5 focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400 focus:border-zinc-900">
                     <option value="">{{ __('All Categories') }}</option>
-                    @foreach (cache()->remember('active_categories_all', 3600, fn() => \App\Models\Category::where('active', 1)->orderBy('name')->get()) as $category)
+                    @foreach ($categories as $category)
                         <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>
                             {{ $category->name }}
                         </option>

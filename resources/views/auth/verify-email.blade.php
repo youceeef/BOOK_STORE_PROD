@@ -45,7 +45,7 @@
     @endif
 
     {{-- Testing Sandbox Quick Verification Action --}}
-    @if (isset($demoVerificationUrl))
+    @if (!empty($demoVerificationUrl))
         <div class="mb-6 p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/70 border border-zinc-200 dark:border-zinc-800 text-xs space-y-2">
             <div class="flex items-center justify-between">
                 <span class="font-semibold text-zinc-900 dark:text-white flex items-center gap-1.5">

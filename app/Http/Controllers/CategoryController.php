@@ -16,6 +16,8 @@ class CategoryController extends Controller
      */
     public function show(Category $category): View
     {
+        abort_unless($category->active, 404);
+
         // Eager load category relationship for books (optional, but good practice)
         // Paginate the books belonging to this category
         $books = $category->books()

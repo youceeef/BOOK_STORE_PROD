@@ -28,6 +28,48 @@
             </div>
         </nav>
 
+        {{-- Stock Reservation Countdown Timer --}}
+        <div x-data="{
+                timeLeft: 15 * 60,
+                formattedTime: '15:00',
+                expired: false,
+                init() {
+                    const timer = setInterval(() => {
+                        if (this.timeLeft > 0) {
+                            this.timeLeft--;
+                            const mins = Math.floor(this.timeLeft / 60);
+                            const secs = this.timeLeft % 60;
+                            this.formattedTime = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                        } else {
+                            this.expired = true;
+                            clearInterval(timer);
+                        }
+                    }, 1000);
+                }
+            }"
+            class="mb-6">
+            <div x-show="!expired" class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-lg p-3 text-xs flex items-center justify-between text-amber-900 dark:text-amber-200">
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                    <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ __('Volumes in your bag are reserved for you.') }}</span>
+                </div>
+                <div class="font-mono font-bold text-amber-800 dark:text-amber-300">
+                    <span x-text="formattedTime"></span> {{ __('remaining') }}
+                </div>
+            </div>
+            <div x-show="expired" x-cloak style="display: none;" class="bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 rounded-lg p-3 text-xs flex items-center justify-between text-rose-900 dark:text-rose-200">
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                    <svg class="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span>{{ __('Your 15-minute stock hold has expired. If items remain in stock, you can still complete checkout.') }}</span>
+                </div>
+                <a href="{{ route('cart.index') }}" class="underline font-semibold hover:text-rose-700 dark:hover:text-rose-100">{{ __('Review Bag') }}</a>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {{-- Left Column: Payment & Shipping Form (7 cols) --}}
             <div class="lg:col-span-7 bg-white dark:bg-[#12131a] rounded-lg border border-zinc-200 dark:border-zinc-800 p-6 sm:p-8">

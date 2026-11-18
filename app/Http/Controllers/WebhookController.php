@@ -54,29 +54,83 @@ class WebhookController extends CashierController
         try {
             // --- Step 1: Find User ---
             Log::info("Webhook: [{$paymentIntentId}] - Attempting to find user...");
-            $stripeCustomerId = $paymentIntentData['customer'] ?? null; // Use array access
-            if (!$stripeCustomerId) {
-                throw new Exception("No Customer ID found on PaymentIntent."); // Fail early
+            $metadata = $paymentIntentData['metadata'] ?? [];
+            $stripeCustomerId = $paymentIntentData['customer'] ?? null;
+            $user = null;
+            if (!empty($metadata['user_id'])) {
+                $user = User::find($metadata['user_id']);
             }
-
-            $user = User::where('stripe_id', $stripeCustomerId)->first();
+            if (!$user && $stripeCustomerId) {
+                $user = User::where('stripe_id', $stripeCustomerId)->first();
+            }
+            if (!$user && !empty($metadata['order_id'])) {
+                $matchedOrder = Order::find($metadata['order_id']);
+                $user = $matchedOrder?->user;
+            }
             if (!$user) {
-                throw new Exception("User not found for Stripe Customer ID: {$stripeCustomerId}"); // Fail early
+                throw new Exception("User not found for Stripe Customer ID: {$stripeCustomerId}");
             }
             Log::info("Webhook: [{$paymentIntentId}] - Found User ID: {$user->id}");
 
             // --- Step 2: Check for Existing Order (Idempotency with Lock) ---
             Log::info("Webhook: [{$paymentIntentId}] - Checking for existing order...");
-            $existingOrder = Order::where('stripe_payment_intent_id', $paymentIntentId)->lockForUpdate()->first();
-            if ($existingOrder) {
-                Log::warning("Webhook Warning: [{$paymentIntentId}] - Order ID {$existingOrder->id} already exists. Skipping creation.");
-                DB::commit(); // Commit empty transaction
-                Log::info("Webhook: [{$paymentIntentId}] - DB Transaction Committed (Skipped Duplicate).");
-                return $this->successMethod(); // Acknowledge successfully.
+            $metadata = $paymentIntentData['metadata'] ?? [];
+            $existingOrder = null;
+            if (!empty($metadata['order_id'])) {
+                $existingOrder = Order::where('id', $metadata['order_id'])->lockForUpdate()->first();
             }
-            Log::info("Webhook: [{$paymentIntentId}] - No existing order found.");
+            if (!$existingOrder) {
+                $existingOrder = Order::where('stripe_payment_intent_id', $paymentIntentId)->lockForUpdate()->first();
+            }
 
-            // --- Step 3: Retrieve and Validate Cart Items from Metadata ---
+            if ($existingOrder) {
+                if ($existingOrder->payment_status !== 'paid') {
+                    $existingOrder->update([
+                        'status' => 'paid',
+                        'payment_status' => 'paid',
+                        'stripe_payment_intent_id' => $paymentIntentId,
+                    ]);
+
+                    // Decrement stock
+                    foreach ($existingOrder->items as $item) {
+                        $book = Book::where('id', $item->book_id)->lockForUpdate()->first();
+                        if ($book && $book->stock > 0) {
+                            $book->decrement('stock', min($book->stock, $item->quantity));
+                        }
+                    }
+
+                    // Increment coupon
+                    if ($existingOrder->coupon_code) {
+                        $coupon = Coupon::where('code', $existingOrder->coupon_code)->lockForUpdate()->first();
+                        if ($coupon) {
+                            $coupon->increment('usage_count');
+                        }
+                    }
+
+                    StockReservationService::releaseHolds($existingOrder->user_id, '');
+                }
+
+                DB::commit();
+                Log::info("Webhook: [{$paymentIntentId}] - Order ID {$existingOrder->id} marked paid idempotently.");
+
+                // Dispatch confirmation email if not yet dispatched
+                if (!$existingOrder->confirmation_sent_at) {
+                    try {
+                        if ($user && $user->email) {
+                            \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\OrderConfirmation($existingOrder));
+                            $existingOrder->update(['confirmation_sent_at' => now()]);
+                            Log::info("Webhook: [{$paymentIntentId}] - Dispatched order confirmation email to {$user->email}.");
+                        }
+                    } catch (Exception $mailEx) {
+                        Log::warning("Webhook: [{$paymentIntentId}] - Confirmation email not sent: " . $mailEx->getMessage());
+                    }
+                }
+
+                return $this->successMethod("Webhook Handled: Order {$existingOrder->id} confirmed.");
+            }
+            Log::info("Webhook: [{$paymentIntentId}] - No existing order found, proceeding to fallback creation.");
+
+            // --- Step 3: Retrieve and Validate Cart Items from Metadata (Fallback Path) ---
             Log::info("Webhook: [{$paymentIntentId}] - Attempting to retrieve cart items from metadata...");
             $metadata = $paymentIntentData['metadata'] ?? []; // Default to empty array if no metadata
 
@@ -144,6 +198,8 @@ class WebhookController extends CashierController
             $order = Order::create([
                 'user_id' => $user->id,
                 'status' => 'paid',
+                'payment_status' => 'paid',
+                'fulfillment_status' => 'unfulfilled',
                 'total_amount' => $totalAmount, // This is the final amount charged by Stripe
                 'stripe_payment_intent_id' => $paymentIntentId,
                 // --- Store coupon info if available --- <<<< MODIFIED BLOCK >>>>

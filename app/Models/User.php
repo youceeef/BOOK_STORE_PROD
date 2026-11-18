@@ -97,7 +97,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasPurchased(Book $book): bool
     {
         return $this->orders()
-            ->whereIn('status', ['paid', 'completed'])
+            ->where(function ($query) {
+                $query->where('payment_status', 'paid')
+                    ->orWhereIn('status', ['paid', 'completed', 'shipped', 'delivered', 'processing']);
+            })
             ->whereHas('items', function ($query) use ($book) {
                 $query->where('book_id', $book->id);
             })
@@ -109,8 +112,9 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getAvatarUrlAttribute(): ?string
     {
-        if ($this->avatar && Storage::disk('public')->exists($this->avatar)) {
-            return Storage::disk('public')->url($this->avatar);
+        $disk = config('filesystems.media_disk', 'public');
+        if ($this->avatar && Storage::disk($disk)->exists($this->avatar)) {
+            return Storage::disk($disk)->url($this->avatar);
         }
         return null;
     }

@@ -13,14 +13,23 @@ class Order extends Model
 
     protected $fillable = [
         'user_id',
+        'customer_name_snapshot',
+        'customer_email_snapshot',
         'status',
+        'payment_status',
+        'fulfillment_status',
         'carrier',
         'tracking_number',
         'estimated_delivery_at',
         'shipped_at',
         'delivered_at',
+        'confirmation_sent_at',
         'fulfillment_notes',
+        'cancelled_reason',
+        'cancelled_at',
         'total_amount',
+        'refunded_amount',
+        'refund_id',
         'stripe_payment_intent_id',
         'billing_address',
         'shipping_address',
@@ -32,7 +41,40 @@ class Order extends Model
         'estimated_delivery_at' => 'date',
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'confirmation_sent_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
+
+    public function getCustomerNameAttribute(): string
+    {
+        return $this->customer_name_snapshot ?? $this->user?->name ?? 'Valued Customer';
+    }
+
+    public function getCustomerEmailAttribute(): string
+    {
+        return $this->customer_email_snapshot ?? $this->user?->email ?? 'N/A';
+    }
+
+    /**
+     * Return formatted human-readable shipping address snapshot.
+     */
+    public function getFormattedShippingAddressAttribute(): string
+    {
+        $raw = $this->shipping_address ?? $this->billing_address;
+        if (!$raw) {
+            return 'Standard Delivery';
+        }
+        $data = is_array($raw) ? $raw : json_decode($raw, true);
+        if (!is_array($data)) {
+            return (string) $raw;
+        }
+        $lines = array_filter([
+            $data['name'] ?? null,
+            $data['address'] ?? null,
+            trim(($data['city'] ?? '') . ' ' . ($data['postal_code'] ?? '')),
+        ]);
+        return implode(', ', $lines) ?: 'Standard Delivery';
+    }
 
     /**
      * Get numeric progression step index for the fulfillment timeline.
@@ -84,6 +126,29 @@ class Order extends Model
         }
 
         return "https://parcelsapp.com/en/tracking/{$code}";
+    }
+
+    public function getPaymentStatusAttribute(?string $value): string
+    {
+        if (!empty($value) && $value !== 'pending') {
+            return $value;
+        }
+        if (($this->attributes['status'] ?? null) === 'paid') {
+            return 'paid';
+        }
+        return $value ?: 'pending';
+    }
+
+    public function getFulfillmentStatusAttribute(?string $value): string
+    {
+        if (!empty($value) && $value !== 'unfulfilled') {
+            return $value;
+        }
+        $status = $this->attributes['status'] ?? null;
+        if (in_array($status, ['shipped', 'delivered', 'cancelled'])) {
+            return $status;
+        }
+        return $value ?: 'unfulfilled';
     }
 
     // An Order belongs to a User

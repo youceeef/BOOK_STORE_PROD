@@ -120,7 +120,7 @@
                 </template>
                 <template x-if="!preview">
                     @isset($book)
-                        <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}" class="w-full h-full object-cover">
+                        <img src="{{ $book->cover_url }}" class="w-full h-full object-cover">
                     @else
                         <span class="text-[11px] text-zinc-400">No cover</span>
                     @endisset

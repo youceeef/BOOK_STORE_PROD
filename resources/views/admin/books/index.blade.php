@@ -34,7 +34,7 @@
                                 <td class="px-5 py-3.5">
                                     <div class="flex items-center space-x-3.5 rtl:space-x-reverse">
                                         <div class="w-10 h-14 rounded overflow-hidden bg-zinc-100 dark:bg-zinc-900 flex-shrink-0 border border-zinc-200 dark:border-zinc-800">
-                                            <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
+                                            <img src="{{ $book->cover_url }}"
                                                 alt="{{ $book->title }}" class="w-full h-full object-cover">
                                         </div>
                                         <div>

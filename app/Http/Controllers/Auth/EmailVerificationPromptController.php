@@ -19,15 +19,18 @@ class EmailVerificationPromptController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        $demoVerificationUrl = cache()->get('latest_verification_' . $request->user()->id)
-            ?: \Illuminate\Support\Facades\URL::temporarySignedRoute(
-                'verification.verify',
-                now()->addMinutes(60),
-                [
-                    'id' => $request->user()->getKey(),
-                    'hash' => sha1($request->user()->getEmailForVerification()),
-                ]
-            );
+        $demoVerificationUrl = null;
+        if (!app()->isProduction()) {
+            $demoVerificationUrl = cache()->get('latest_verification_' . $request->user()->id)
+                ?: \Illuminate\Support\Facades\URL::temporarySignedRoute(
+                    'verification.verify',
+                    now()->addMinutes(60),
+                    [
+                        'id' => $request->user()->getKey(),
+                        'hash' => sha1($request->user()->getEmailForVerification()),
+                    ]
+                );
+        }
 
         return view('auth.verify-email', compact('demoVerificationUrl'));
     }

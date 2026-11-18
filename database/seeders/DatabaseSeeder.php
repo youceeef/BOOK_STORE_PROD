@@ -20,24 +20,42 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // 1. Admin User
-        $admin = User::updateOrCreate(
-            ['email' => 'admin@example.com'],
-            [
-                'name' => 'Admin User',
-                'password' => Hash::make('password'),
-                'is_admin' => true,
-            ]
-        );
+        $adminEmail = env('ADMIN_EMAIL', 'admin@example.com');
+        $adminPassword = env('ADMIN_PASSWORD', 'password');
 
-        // 2. Demo Customer User
-        $customer = User::updateOrCreate(
-            ['email' => 'customer@example.com'],
-            [
-                'name' => 'Jane Reader',
-                'password' => Hash::make('password'),
-                'is_admin' => false,
-            ]
-        );
+        $admin = User::firstWhere('email', $adminEmail);
+        if (!$admin) {
+            $admin = User::create([
+                'name' => 'Admin User',
+                'email' => $adminEmail,
+                'password' => Hash::make($adminPassword),
+                'is_admin' => true,
+            ]);
+        } elseif (!app()->isProduction()) {
+            $admin->update([
+                'password' => Hash::make($adminPassword),
+                'is_admin' => true,
+            ]);
+        }
+
+        // 2. Demo Customer User (local/testing only)
+        $customer = null;
+        if (!app()->isProduction()) {
+            $customer = User::firstWhere('email', 'customer@example.com');
+            if (!$customer) {
+                $customer = User::create([
+                    'name' => 'Jane Reader',
+                    'email' => 'customer@example.com',
+                    'password' => Hash::make('password'),
+                    'is_admin' => false,
+                ]);
+            } else {
+                $customer->update([
+                    'password' => Hash::make('password'),
+                    'is_admin' => false,
+                ]);
+            }
+        }
 
         // 3. Categories
         $categories = [
@@ -96,9 +114,10 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 6. Sample Demo Orders
-        $firstBooks = Book::take(3)->get();
-        if ($firstBooks->count() >= 2 && Order::count() === 0) {
+        // 6. Sample Demo Orders (local/testing only)
+        if (!app()->isProduction() && $customer) {
+            $firstBooks = Book::take(3)->get();
+            if ($firstBooks->count() >= 2 && Order::count() === 0) {
             $order1 = Order::create([
                 'user_id' => $customer->id,
                 'status' => 'paid',
@@ -141,4 +160,5 @@ class DatabaseSeeder extends Seeder
             ]);
         }
     }
+}
 }

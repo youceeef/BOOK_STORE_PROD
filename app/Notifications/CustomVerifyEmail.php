@@ -38,11 +38,13 @@ class CustomVerifyEmail extends BaseVerifyEmail
     {
         $url = $this->verificationUrl($notifiable);
 
-        // Record in cache for demo sandbox testing
-        cache()->put('latest_verification_' . $notifiable->getKey(), $url, now()->addHours(2));
+        if (!app()->isProduction()) {
+            // Record in cache for demo sandbox testing
+            cache()->put('latest_verification_' . $notifiable->getKey(), $url, now()->addHours(2));
 
-        // Record into admin mail log for demonstration inspector
-        $this->recordToMailbox($notifiable->getEmailForVerification(), 'Email Verification Notice', $url, 'verify_email');
+            // Record into admin mail log for demonstration inspector
+            $this->recordToMailbox($notifiable->getEmailForVerification(), 'Email Verification Notice', $url, 'verify_email');
+        }
 
         return (new MailMessage)
             ->subject('Verify Your Email Address · BookStore')

@@ -53,7 +53,7 @@
                                 </a>
                             </div>
                             <div class="pt-1 space-y-0.5 max-h-60 overflow-y-auto">
-                                @foreach (cache()->remember('active_categories', 3600, fn() => \App\Models\Category::where('active', 1)->orderBy('name')->get()) as $category)
+                                @foreach (cache()->remember('active_categories', 3600, fn() => \App\Models\Category::where('active', 1)->withCount('books')->orderBy('name')->get()) as $category)
                                     <a href="{{ route('categories.show', $category->slug) }}"
                                         class="block px-3 py-1.5 rounded-md text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
                                         {{ $category->name }}

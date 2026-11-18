@@ -1,4 +1,30 @@
 <x-app-layout>
+    <x-slot name="title">{{ $book->title }} by {{ $book->author }}</x-slot>
+    <x-slot name="metaDescription">{{ Str::limit(strip_tags($book->description ?: $book->title), 155) }}</x-slot>
+
+    @push('scripts')
+    <script type="application/ld+json">
+    {
+      "@@context": "https://schema.org",
+      "@type": "Book",
+      "name": {{ json_encode($book->title) }},
+      "author": {
+        "@type": "Person",
+        "name": {{ json_encode($book->author ?: 'Unknown') }}
+      },
+      "isbn": {{ json_encode($book->isbn ?: '') }},
+      "image": {{ json_encode($book->cover_url) }},
+      "description": {{ json_encode(Str::limit(strip_tags($book->description ?? ''), 250)) }},
+      "offers": {
+        "@type": "Offer",
+        "price": "{{ number_format($book->price, 2, '.', '') }}",
+        "priceCurrency": "USD",
+        "availability": "{{ $book->stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}"
+      }
+    }
+    </script>
+    @endpush
+
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         x-data="{
             readerOpen: false,
@@ -34,8 +60,10 @@
                 {{-- Left: Cover Presentation & Specifications --}}
                 <div class="lg:col-span-5 flex flex-col items-center">
                     <div class="w-full aspect-[3/4] max-w-xs bg-zinc-100/70 dark:bg-zinc-900/50 rounded-lg p-6 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
-                        <img src="{{ $book->cover_image ? asset($book->cover_image) : asset('images/covers/default.png') }}"
+                        <img src="{{ $book->cover_url }}"
                             alt="{{ $book->title }} Cover"
+                            width="400"
+                            height="533"
                             class="max-h-full max-w-full object-contain shadow-md">
                     </div>
 

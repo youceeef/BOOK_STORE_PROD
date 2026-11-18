@@ -55,4 +55,14 @@ class AdminMailboxTest extends TestCase
         $response->assertRedirect(route('admin.mailbox.index'));
         $this->assertNull(cache()->get('dev_mailbox_log'));
     }
+
+    public function test_admin_cannot_access_mailbox_in_production(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->app['env'] = 'production';
+
+        $response = $this->actingAs($admin)->get(route('admin.mailbox.index'));
+
+        $response->assertNotFound();
+    }
 }

@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB; // Database facade (optional, if needed elsew
 use Illuminate\Support\Str;
 use Illuminate\View\View; // For return type hinting
 use Illuminate\Http\RedirectResponse; // For return type hinting
+use Illuminate\Http\Request;
 
 class CheckoutController extends Controller
 {
@@ -94,192 +95,249 @@ class CheckoutController extends Controller
 
     /**
      * Process the payment after Stripe confirmation on the frontend.
-     * Re-validates coupon, calculates final amount, initiates charge.
+     * Atomically locks stock, validates coupon, builds pending order, and charges Stripe with idempotency.
      */
     public function process(CheckoutRequest $request): RedirectResponse
     {
         $user = Auth::user();
-        $paymentMethod = $request->validated()['payment_method'];
-
-        // --- Recalculate totals and RE-VALIDATE coupon ---
-        $subtotal = Cart::getSubTotal(false); // Get subtotal without conditions
-        $discount = 0;
-        $couponCode = null;
-        $couponModel = null; // Initialize coupon model variable
-
-        Log::info("Checkout Process: Starting for User ID {$user->id}. Subtotal: {$subtotal}");
-
-        if (session()->has('coupon')) {
-            $couponSessionData = session('coupon');
-            Log::info("Checkout Process: Found coupon in session: " . json_encode($couponSessionData));
-
-            $couponModel = Coupon::where('code', $couponSessionData['code'])->first();
-
-            // --- Coupon Validation Block ---
-            $couponIsValid = false; // Flag to track validity
-            if ($couponModel) {
-                if (!$couponModel->isValid()) {
-                    Log::warning("Checkout Process: Coupon code '{$couponModel->code}' is invalid (expired/limit reached).");
-                    session()->forget('coupon');
-                    return redirect()->route('cart.index')->with('error', 'The applied coupon has expired or reached its usage limit.'); // Redirect to cart
-                } elseif ($couponModel->min_amount && $subtotal < $couponModel->min_amount) {
-                    Log::warning("Checkout Process: Cart subtotal {$subtotal} is less than minimum amount {$couponModel->min_amount} for coupon '{$couponModel->code}'.");
-                    session()->forget('coupon');
-                    return redirect()->route('cart.index')->with('error', "Cart total does not meet the minimum amount (\${$couponModel->min_amount}) for the applied coupon."); // Redirect to cart
-                } else {
-                    // Coupon is valid for this checkout attempt
-                    $couponIsValid = true;
-                    $discount = $couponModel->calculateDiscount($subtotal);
-                    $couponCode = $couponModel->code; // Store code for metadata/order record
-                    Log::info("Checkout Process: Coupon '{$couponCode}' validated. Discount calculated: {$discount}");
-                }
-            } else {
-                // Coupon code from session doesn't exist in DB anymore
-                Log::warning("Checkout Process: Coupon code '{$couponSessionData['code']}' from session not found in DB.");
-                session()->forget('coupon');
-                return redirect()->route('cart.index')->with('error', 'The applied coupon is no longer valid.'); // Redirect to cart
-            }
-            // --- End Coupon Validation Block ---
-
-        } else {
-            Log::info("Checkout Process: No coupon found in session.");
-        }
-
-        // Calculate final total and amount in cents for Stripe charge
-        $finalTotal = max(0, $subtotal - $discount); // Ensure it's not negative
-        $amountInCents = round($finalTotal * 100);
-
-        Log::info("Checkout Process: Final total: {$finalTotal}. Amount for Stripe (cents): {$amountInCents}");
-        // --- End Calculation ---
+        $validated = $request->validated();
+        $paymentMethod = $validated['payment_method'] ?? null;
 
         $cartItemsCollection = Cart::getContent();
-
-        // --- Concurrency Safety: Pre-Charge Pessimistic Lock & Availability Verification ---
-        $stockCheck = DB::transaction(function () use ($cartItemsCollection) {
-            foreach ($cartItemsCollection as $cartItem) {
-                $book = Book::where('id', $cartItem->id)->lockForUpdate()->first();
-                if (!$book || $book->stock < $cartItem->quantity) {
-                    $available = $book ? $book->stock : 0;
-                    return [
-                        'valid' => false,
-                        'message' => $available === 0
-                            ? "Sorry, '{$cartItem->name}' is now out of stock."
-                            : "Only {$available} copies of '{$cartItem->name}' remain in stock.",
-                    ];
-                }
-            }
-            return ['valid' => true, 'message' => null];
-        });
-
-        if (!$stockCheck['valid']) {
-            return redirect()->route('cart.index')->with('error', $stockCheck['message']);
+        if ($cartItemsCollection->isEmpty()) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
 
-        // --- Database/Stripe Operations ---
+        // --- Atomic Pre-Payment Lock & Pending Order Creation ---
         try {
-            // Ensure Stripe customer exists & update default payment method
+            $orderData = DB::transaction(function () use ($user, $validated, $cartItemsCollection) {
+                $subtotal = 0;
+                $lineItems = [];
+
+                // 1. Verify stock & prices under exclusive row lock
+                foreach ($cartItemsCollection as $cartItem) {
+                    $book = Book::where('id', $cartItem->id)->lockForUpdate()->first();
+                    if (!$book || $book->stock < $cartItem->quantity) {
+                        $available = $book ? $book->stock : 0;
+                        throw new Exception($available === 0
+                            ? "Sorry, '{$cartItem->name}' is now out of stock."
+                            : "Only {$available} copies of '{$cartItem->name}' remain in stock.");
+                    }
+
+                    $price = $book->price;
+                    $lineSubtotal = round($price * $cartItem->quantity, 2);
+                    $subtotal += $lineSubtotal;
+
+                    $lineItems[] = [
+                        'book_id' => $book->id,
+                        'title_snapshot' => $book->title,
+                        'author_snapshot' => $book->author,
+                        'quantity' => $cartItem->quantity,
+                        'price' => $price,
+                    ];
+                }
+
+                // 2. Atomically validate coupon under lock
+                $discount = 0;
+                $couponCode = null;
+                if (session()->has('coupon')) {
+                    $couponSession = session('coupon');
+                    $coupon = Coupon::where('code', $couponSession['code'])->lockForUpdate()->first();
+                    if (!$coupon || !$coupon->isValid()) {
+                        session()->forget('coupon');
+                        throw new Exception('The applied coupon is no longer valid or has reached its usage limit.');
+                    }
+                    if ($coupon->min_amount && $subtotal < $coupon->min_amount) {
+                        session()->forget('coupon');
+                        throw new Exception("Cart total does not meet the minimum amount (\${$coupon->min_amount}) for coupon {$coupon->code}.");
+                    }
+                    $discount = $coupon->calculateDiscount($subtotal);
+                    $couponCode = $coupon->code;
+                }
+
+                $finalTotal = max(0, round($subtotal - $discount, 2));
+
+                $shippingAddress = json_encode([
+                    'name' => $validated['name'],
+                    'address' => $validated['address'],
+                    'city' => $validated['city'],
+                    'postal_code' => $validated['postal_code'],
+                ]);
+
+                // 3. Create durable pending order
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'customer_name_snapshot' => $user->name,
+                    'customer_email_snapshot' => $user->email,
+                    'status' => 'pending',
+                    'payment_status' => 'pending',
+                    'fulfillment_status' => 'unfulfilled',
+                    'total_amount' => $finalTotal,
+                    'shipping_address' => $shippingAddress,
+                    'billing_address' => $shippingAddress,
+                    'coupon_code' => $couponCode,
+                    'discount_amount' => $discount,
+                ]);
+
+                foreach ($lineItems as $item) {
+                    $order->items()->create($item);
+                }
+
+                return [
+                    'order' => $order,
+                    'finalTotal' => $finalTotal,
+                    'amountInCents' => round($finalTotal * 100),
+                ];
+            });
+        } catch (\Throwable $preEx) {
+            return redirect()->route('cart.index')->with('error', $preEx->getMessage());
+        }
+
+        $order = $orderData['order'];
+        $amountInCents = $orderData['amountInCents'];
+
+        // Free order support (e.g. 100% discount coupon)
+        if ($amountInCents <= 0) {
+            $this->completeOrderPayment($order, 'free_' . Str::random(20));
+            Cart::clear();
+            session()->forget('coupon');
+            return redirect()->route('checkout.success')->with('success', 'Order confirmed! Your order has been placed.');
+        }
+
+        if (empty($paymentMethod) || !str_starts_with($paymentMethod, 'pm_')) {
+            $order->update(['payment_status' => 'failed', 'status' => 'failed']);
+            return redirect()->route('checkout.index')->with('error', 'A valid payment method is required to complete your purchase.');
+        }
+
+        // --- Initiate Charge with Idempotency Key & Order Reference ---
+        try {
             $user->createOrGetStripeCustomer();
             $user->updateDefaultPaymentMethod($paymentMethod);
 
-            // Prepare metadata for Stripe charge
             $stripeMetadata = [
-                'user_id' => $user->id,
-                'cart_items' => json_encode(Cart::getContent()->toArray()), // Send cart contents
-                'cart_total_items' => Cart::getTotalQuantity(),
-                'coupon_code' => $couponCode, // Send coupon code used (or null)
-                'subtotal' => $subtotal,     // Optional: store original subtotal
-                'discount_applied' => $discount, // Optional: store discount amount
+                'order_id' => (string) $order->id,
+                'user_id' => (string) $user->id,
             ];
-            Log::info("Checkout Process: Preparing Stripe charge with metadata: ", $stripeMetadata);
 
-
-            // --- Attempt charge using the FINAL calculated amount ---
             $charge = $user->charge($amountInCents, $user->defaultPaymentMethod()->id, [
-                'return_url' => route('checkout.success'),
-                'description' => 'Lara Bookstore Order Payment for ' . $user->email,
-                'metadata' => $stripeMetadata, // Pass prepared metadata
-                'confirm' => true, // Attempt to confirm payment immediately
+                'return_url' => route('checkout.return', ['order' => $order->id]),
+                'description' => "Order #{$order->id} for {$user->email}",
+                'metadata' => $stripeMetadata,
+                'confirm' => true,
+                'idempotency_key' => "order_charge_{$order->id}",
             ]);
-            Log::info("Checkout Process: Stripe charge initiated successfully for User ID {$user->id}. Charge/PI ID: " . ($charge->id ?? 'N/A'));
-            // --- End Charge ---
 
-            // --- Immediate Synchronous Order Creation (Guarantees instant Purchase History) ---
             $paymentIntentId = $charge->id ?? ('pi_' . Str::random(24));
-            $cartItemsCollection = Cart::getContent();
-            $validated = $request->validated();
-            $shippingAddress = json_encode([
-                'name' => $validated['name'] ?? $user->name,
-                'address' => $validated['address'] ?? null,
-                'city' => $validated['city'] ?? null,
-                'postal_code' => $validated['postal_code'] ?? null,
-            ]);
+            $this->completeOrderPayment($order, $paymentIntentId);
 
-            DB::transaction(function () use ($user, $finalTotal, $paymentIntentId, $shippingAddress, $cartItemsCollection, $couponModel, $couponCode, $discount) {
-                // Check if already created (idempotency guard with exclusive lock)
-                $order = Order::where('stripe_payment_intent_id', $paymentIntentId)->lockForUpdate()->first();
-                if (!$order) {
-                    $order = Order::create([
-                        'user_id' => $user->id,
-                        'status' => 'paid',
-                        'total_amount' => $finalTotal,
-                        'stripe_payment_intent_id' => $paymentIntentId,
-                        'shipping_address' => $shippingAddress,
-                        'billing_address' => $shippingAddress,
-                        'coupon_code' => $couponCode,
-                        'discount_amount' => $discount,
-                    ]);
-
-                    foreach ($cartItemsCollection as $cartItem) {
-                        $order->items()->create([
-                            'book_id' => $cartItem->id,
-                            'quantity' => $cartItem->quantity,
-                            'price' => $cartItem->price,
-                        ]);
-
-                        // Decrement inventory stock with exclusive row lock
-                        $book = Book::where('id', $cartItem->id)->lockForUpdate()->first();
-                        if ($book && $book->stock > 0) {
-                            $book->decrement('stock', min($book->stock, $cartItem->quantity));
-                        }
-                    }
-
-                    if ($couponModel) {
-                        $lockedCoupon = Coupon::where('id', $couponModel->id)->lockForUpdate()->first();
-                        if ($lockedCoupon) {
-                            $lockedCoupon->increment('usage_count');
-                        }
-                    }
-
-                    // Release temporary stock holds for this session
-                    StockReservationService::releaseHolds($user->id, session()->getId());
-                }
-            });
-
-            // --- Clear Cart & Coupon AFTER successful order creation ---
             Cart::clear();
             session()->forget('coupon');
-            Log::info("Checkout Process: Order created, cart and coupon cleared for User ID: {$user->id}.");
 
             return redirect()->route('checkout.success')->with('success', 'Payment successful! Your order has been placed.');
         } catch (IncompletePayment $exception) {
-            // Handle SCA (3D Secure) redirects
-            Log::warning("Checkout Process: Incomplete Payment for user {$user->id} - Requires Action. PaymentIntent ID: {$exception->payment->id}. Message: " . $exception->getMessage());
+            $order->update(['stripe_payment_intent_id' => $exception->payment->id]);
+            Log::warning("Checkout Process: Incomplete Payment for user {$user->id} - Requires SCA. Order ID: {$order->id}");
             return redirect()->route(
                 'cashier.payment',
-                [$exception->payment->id, 'redirect' => route('checkout.process')] // Redirect to Cashier's payment page
+                [$exception->payment->id, 'redirect' => route('checkout.return', ['order' => $order->id])]
             );
         } catch (\Throwable $e) {
-            // Handle other exceptions (card declines, API errors, etc.)
-            Log::error("Checkout Process Error for user {$user->id}: " . $e->getMessage());
-            // Optionally log stack trace: Log::error($e);
-            $errorMessage = 'An error occurred during payment processing. Please try again or contact support.';
-            // Provide more specific feedback if possible (e.g., from Stripe CardException)
+            $order->update(['payment_status' => 'failed', 'status' => 'failed']);
+            Log::error("Checkout Process Error for Order #{$order->id}: " . $e->getMessage());
+
+            $errorMessage = 'An error occurred during payment processing. Please try again.';
             if ($e instanceof \Stripe\Exception\CardException) {
                 $errorMessage = $e->getError()->message ?? $errorMessage;
             } elseif (config('app.debug')) {
                 $errorMessage .= ' (' . $e->getMessage() . ')';
             }
+
             return redirect()->route('checkout.index')->with('error', $errorMessage);
+        }
+    }
+
+    /**
+     * GET-safe return endpoint for 3-D Secure (SCA) payments.
+     */
+    public function return(Request $request, Order $order): RedirectResponse
+    {
+        if ($order->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($order->payment_status === 'paid') {
+            Cart::clear();
+            session()->forget('coupon');
+            return redirect()->route('checkout.success')->with('success', 'Payment confirmed! Your order has been placed.');
+        }
+
+        // Verify PaymentIntent status with Stripe
+        if ($order->stripe_payment_intent_id) {
+            try {
+                $payment = Auth::user()->findPaymentIntent($order->stripe_payment_intent_id);
+                if ($payment && $payment->status === 'succeeded') {
+                    $this->completeOrderPayment($order, $order->stripe_payment_intent_id);
+                    Cart::clear();
+                    session()->forget('coupon');
+                    return redirect()->route('checkout.success')->with('success', 'Payment confirmed! Your order has been placed.');
+                }
+            } catch (\Throwable $e) {
+                Log::error("3-D Secure Return PaymentIntent check failed for Order #{$order->id}: " . $e->getMessage());
+            }
+        }
+
+        return redirect()->route('checkout.index')->with('error', 'Payment verification was not completed. Please try again.');
+    }
+
+    /**
+     * Atomically transition a pending order to paid, claim stock and coupon, and send confirmation email.
+     */
+    public function completeOrderPayment(Order $order, string $paymentIntentId): void
+    {
+        DB::transaction(function () use ($order, $paymentIntentId) {
+            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+            if (!$lockedOrder || $lockedOrder->payment_status === 'paid') {
+                return;
+            }
+
+            $lockedOrder->update([
+                'status' => 'paid',
+                'payment_status' => 'paid',
+                'stripe_payment_intent_id' => $paymentIntentId,
+            ]);
+
+            // Decrement inventory stock with exclusive row lock
+            foreach ($lockedOrder->items as $item) {
+                $book = Book::where('id', $item->book_id)->lockForUpdate()->first();
+                if ($book && $book->stock > 0) {
+                    $book->decrement('stock', min($book->stock, $item->quantity));
+                }
+            }
+
+            // Increment coupon usage
+            if ($lockedOrder->coupon_code) {
+                $coupon = Coupon::where('code', $lockedOrder->coupon_code)->lockForUpdate()->first();
+                if ($coupon) {
+                    $coupon->increment('usage_count');
+                }
+            }
+
+            // Release temporary stock holds
+            StockReservationService::releaseHolds($lockedOrder->user_id, session()->getId());
+        });
+
+        // Dispatch confirmation email exactly once
+        $order->refresh();
+        if (!$order->confirmation_sent_at) {
+            try {
+                $recipient = $order->user?->email;
+                if ($recipient) {
+                    \Illuminate\Support\Facades\Mail::to($recipient)->send(new \App\Mail\OrderConfirmation($order));
+                    $order->update(['confirmation_sent_at' => now()]);
+                }
+            } catch (\Throwable $mailEx) {
+                Log::warning("Order Confirmation email dispatch failed for Order #{$order->id}: " . $mailEx->getMessage());
+            }
         }
     }
 

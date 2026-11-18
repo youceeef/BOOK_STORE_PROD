@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -36,20 +38,22 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
+        $mediaDisk = config('filesystems.media_disk', 'public');
+
         // Handle Avatar Removal
         if ($request->boolean('remove_avatar') && $user->avatar) {
-            if (Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
+            if (Storage::disk($mediaDisk)->exists($user->avatar)) {
+                Storage::disk($mediaDisk)->delete($user->avatar);
             }
             $user->avatar = null;
         }
 
         // Handle Avatar Upload
         if ($request->hasFile('avatar')) {
-            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-                Storage::disk('public')->delete($user->avatar);
+            if ($user->avatar && Storage::disk($mediaDisk)->exists($user->avatar)) {
+                Storage::disk($mediaDisk)->delete($user->avatar);
             }
-            $path = $request->file('avatar')->store('avatars', 'public');
+            $path = $request->file('avatar')->store('avatars', $mediaDisk);
             $user->avatar = $path;
         }
 
@@ -76,6 +80,20 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+
+        // Preserve required accounting records: anonymize personal data if user placed orders
+        if ($user->orders()->exists()) {
+            $user->update([
+                'name' => 'Former Customer #' . $user->id,
+                'email' => 'anonymized_' . $user->id . '_' . Str::random(8) . '@example.invalid',
+                'password' => Hash::make(Str::random(32)),
+                'remember_token' => null,
+            ]);
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            return Redirect::to('/');
+        }
 
         Auth::logout();
 

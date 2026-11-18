@@ -118,8 +118,11 @@
                         {{-- Cover & Info --}}
                         <div class="flex items-center space-x-4 rtl:space-x-reverse flex-1 min-w-0">
                             <div class="w-16 h-22 flex-shrink-0 bg-zinc-100 dark:bg-zinc-900 rounded p-1 flex items-center justify-center border border-zinc-200 dark:border-zinc-800">
-                                <img src="{{ asset($book->cover_image ?: 'images/covers/default.png') }}"
+                                <img src="{{ $book->cover_url }}"
                                     alt="{{ $book->title }}"
+                                    width="64"
+                                    height="88"
+                                    loading="lazy"
                                     class="max-h-full max-w-full object-contain">
                             </div>
                             <div class="flex-1 min-w-0">

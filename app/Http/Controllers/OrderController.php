@@ -4,14 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use App\Models\Order;
-use App\Models\Book;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Response;
 use Barryvdh\DomPDF\Facade\Pdf;
-use Exception;
 
 class OrderController extends Controller
 {
@@ -67,62 +64,5 @@ class OrderController extends Controller
         $filename = 'invoice-ORD-' . str_pad($order->id, 5, '0', STR_PAD_LEFT) . '.pdf';
 
         return $pdf->download($filename);
-    }
-
-    /**
-     * Reduce stock quantities for items in an order.
-     * Returns true if successful, false if there's insufficient stock.
-     */
-    protected function reduceStockQuantities(Order $order): bool
-    {
-        try {
-            DB::beginTransaction();
-
-            foreach ($order->items as $item) {
-                $book = Book::find($item->book_id);
-
-                if (!$book || $book->stock < $item->quantity) {
-                    DB::rollBack();
-                    return false;
-                }
-
-                $book->stock -= $item->quantity;
-                $book->save();
-            }
-
-            DB::commit();
-            return true;
-        } catch (Exception $e) {
-            DB::rollBack();
-            return false;
-        }
-    }
-
-    /**
-     * Process a new order and reduce stock.
-     * This method should be called when an order is being placed.
-     */
-    public function processOrder(Order $order): RedirectResponse
-    {
-        try {
-            DB::beginTransaction();
-
-            // Check if stock reduction is successful
-            if (!$this->reduceStockQuantities($order)) {
-                throw new Exception('Insufficient stock for one or more items in your order.');
-            }
-
-            // Mark the order as processed/confirmed
-            $order->status = 'confirmed';
-            $order->save();
-
-            DB::commit();
-            return redirect()->route('orders.show', $order)
-                ->with('success', 'Order processed successfully.');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', $e->getMessage());
-        }
     }
 }

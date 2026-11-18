@@ -36,9 +36,10 @@ class Coupon extends Model
     {
         if ($this->type === 'fixed') {
             // Ensure discount doesn't exceed total
-            return min($this->value, $total);
+            return min((float) $this->value, $total);
         } elseif ($this->type === 'percent') {
-            return round(($this->value / 100) * $total, 2);
+            $discount = round(((float) $this->value / 100) * $total, 2);
+            return min($discount, $total);
         } else {
             return 0; // Should not happen
         }
@@ -51,7 +52,16 @@ class Coupon extends Model
      */
     public function isValid(): bool
     {
-        $isExpired = $this->expires_at && $this->expires_at->isPast();
+        $isExpired = false;
+        if ($this->expires_at) {
+            // Treat date-only / midnight expiry as end of that day
+            $expiry = $this->expires_at->copy();
+            if ($expiry->format('H:i:s') === '00:00:00') {
+                $expiry = $expiry->endOfDay();
+            }
+            $isExpired = $expiry->isPast();
+        }
+
         $usageLimitReached = $this->usage_limit !== null && $this->usage_count >= $this->usage_limit;
 
         return !$isExpired && !$usageLimitReached;

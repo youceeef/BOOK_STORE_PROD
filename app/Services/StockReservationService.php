@@ -27,69 +27,83 @@ class StockReservationService
      */
     public static function reserveCart(?User $user, iterable $cartItems, string $sessionId, int $holdMinutes = self::DEFAULT_HOLD_MINUTES): array
     {
-        return DB::transaction(function () use ($user, $cartItems, $sessionId, $holdMinutes) {
-            // First prune expired reservations to maintain clean availability
-            StockReservation::where('expires_at', '<=', now())->delete();
+        try {
+            return DB::transaction(function () use ($user, $cartItems, $sessionId, $holdMinutes) {
+                // First prune expired reservations to maintain clean availability
+                self::pruneExpired();
 
-            $userId = $user?->id;
-            $expiresAt = now()->addMinutes($holdMinutes);
+                $userId = $user?->id;
+                $expiresAt = now()->addMinutes($holdMinutes);
+                $cartBookIds = [];
 
-            foreach ($cartItems as $item) {
-                $bookId = is_array($item) ? $item['id'] : $item->id;
-                $quantity = is_array($item) ? intval($item['quantity']) : intval($item->quantity);
+                foreach ($cartItems as $item) {
+                    $bookId = is_array($item) ? $item['id'] : $item->id;
+                    $quantity = is_array($item) ? intval($item['quantity']) : intval($item->quantity);
+                    $cartBookIds[] = $bookId;
 
-                // Acquire exclusive pessimistic lock on book row
-                $book = Book::where('id', $bookId)->lockForUpdate()->first();
+                    // Acquire exclusive pessimistic lock on book row
+                    $book = Book::where('id', $bookId)->lockForUpdate()->first();
 
-                if (!$book) {
-                    return [
-                        'success' => false,
-                        'error' => "A volume in your bag is no longer listed in our catalog.",
-                    ];
+                    if (!$book) {
+                        throw new Exception("A volume in your bag is no longer listed in our catalog.");
+                    }
+
+                    // Calculate stock reserved by OTHER shoppers
+                    $reservedByOthers = (int) StockReservation::active()
+                        ->where('book_id', $bookId)
+                        ->where(function ($query) use ($sessionId, $userId) {
+                            $query->where('session_id', '!=', $sessionId);
+                            if ($userId) {
+                                $query->where(function ($q) use ($userId) {
+                                    $q->whereNull('user_id')->orWhere('user_id', '!=', $userId);
+                                });
+                            }
+                        })
+                        ->sum('quantity');
+
+                    $availableStock = max(0, $book->stock - $reservedByOthers);
+
+                    if ($availableStock < $quantity) {
+                        $remainingMsg = $availableStock === 0
+                            ? "'{$book->title}' is currently reserved by other readers or out of stock."
+                            : "'{$book->title}' only has {$availableStock} " . ($availableStock === 1 ? 'copy' : 'copies') . " available.";
+
+                        throw new Exception($remainingMsg);
+                    }
+
+                    // Update or create reservation for this shopper
+                    StockReservation::updateOrCreate(
+                        [
+                            'session_id' => $sessionId,
+                            'book_id' => $bookId,
+                        ],
+                        [
+                            'user_id' => $userId,
+                            'quantity' => $quantity,
+                            'expires_at' => $expiresAt,
+                        ]
+                    );
                 }
 
-                // Calculate stock reserved by OTHER shoppers
-                $reservedByOthers = (int) StockReservation::active()
-                    ->where('book_id', $bookId)
-                    ->where(function ($query) use ($sessionId, $userId) {
-                        $query->where('session_id', '!=', $sessionId);
-                        if ($userId) {
-                            $query->where(function ($q) use ($userId) {
-                                $q->whereNull('user_id')->orWhere('user_id', '!=', $userId);
-                            });
-                        }
-                    })
-                    ->sum('quantity');
+                // Synchronize holds: release reservations for items no longer in the cart
+                $orphanQuery = StockReservation::where(function ($q) use ($sessionId, $userId) {
+                    $q->where('session_id', $sessionId);
+                    if ($userId) {
+                        $q->orWhere('user_id', $userId);
+                    }
+                });
 
-                $availableStock = max(0, $book->stock - $reservedByOthers);
-
-                if ($availableStock < $quantity) {
-                    $remainingMsg = $availableStock === 0
-                        ? "'{$book->title}' is currently reserved by other readers or out of stock."
-                        : "'{$book->title}' only has {$availableStock} " . ($availableStock === 1 ? 'copy' : 'copies') . " available.";
-
-                    return [
-                        'success' => false,
-                        'error' => $remainingMsg,
-                    ];
+                if (!empty($cartBookIds)) {
+                    $orphanQuery->whereNotIn('book_id', $cartBookIds);
                 }
 
-                // Update or create reservation for this shopper
-                StockReservation::updateOrCreate(
-                    [
-                        'session_id' => $sessionId,
-                        'book_id' => $bookId,
-                    ],
-                    [
-                        'user_id' => $userId,
-                        'quantity' => $quantity,
-                        'expires_at' => $expiresAt,
-                    ]
-                );
-            }
+                $orphanQuery->delete();
 
-            return ['success' => true, 'error' => null];
-        });
+                return ['success' => true, 'error' => null];
+            });
+        } catch (\Throwable $e) {
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
     }
 
     /**

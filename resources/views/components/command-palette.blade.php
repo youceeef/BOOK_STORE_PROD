@@ -22,6 +22,9 @@
             x-show="isOpen"
             x-cloak
             style="display: none;"
+            role="dialog"
+            aria-modal="true"
+            aria-label="{{ __('Command Palette') }}"
             x-transition:enter="transition ease-out duration-150"
             x-transition:enter-start="opacity-0 scale-95 translate-y-2"
             x-transition:enter-end="opacity-100 scale-100 translate-y-0"
@@ -45,10 +48,12 @@
                     @keydown.enter.prevent="executeCurrent()"
                     @keydown.escape="close()"
                     placeholder="{{ __('Search titles, authors, genres, or actions...') }}"
+                    aria-label="{{ __('Search titles, authors, genres, or actions...') }}"
                     class="w-full bg-transparent border-0 text-sm text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-0 p-0 font-normal">
 
                 <button @click="close()"
-                    class="px-2 py-0.5 text-[11px] font-sans font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 rounded transition ml-2 rtl:ml-0 rtl:mr-2">
+                    aria-label="{{ __('Close search dialog') }}"
+                    class="px-2 py-1 text-[11px] font-sans font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 rounded transition ml-2 rtl:ml-0 rtl:mr-2">
                     ESC
                 </button>
             </div>
@@ -274,19 +279,26 @@
             results: [],
             selectedIndex: 0,
             loading: false,
+            previousFocusedElement: null,
 
             open() {
+                this.previousFocusedElement = document.activeElement;
                 this.isOpen = true;
                 this.query = '';
                 this.results = [];
                 this.selectedIndex = 0;
                 this.$nextTick(() => {
-                    this.$refs.searchInput.focus();
+                    if (this.$refs.searchInput) {
+                        this.$refs.searchInput.focus();
+                    }
                 });
             },
 
             close() {
                 this.isOpen = false;
+                if (this.previousFocusedElement && typeof this.previousFocusedElement.focus === 'function') {
+                    this.previousFocusedElement.focus();
+                }
             },
 
             async performSearch() {

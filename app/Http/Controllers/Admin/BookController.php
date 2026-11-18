@@ -54,17 +54,12 @@ class BookController extends Controller
         $data['slug'] = Str::slug($request->title) . '-' . Str::random(5); // Create a unique slug
 
         // Handle File Upload
+        $mediaDisk = config('filesystems.media_disk', 'public');
         if ($request->hasFile('cover_image')) {
-            $path = $request->file('cover_image')->store('public/covers'); // Store in storage/app/public/covers
-            // Make sure storage is linked: php artisan storage:link
-            // Use Storage facade to get URL path
-            $data['cover_image'] = Storage::url($path);
-            // OR store relative path if serving directly from public:
-            // $filename = time() . '.' . $request->cover_image->extension();
-            // $request->cover_image->move(public_path('images/covers'), $filename);
-            // $data['cover_image'] = 'images/covers/' . $filename;
+            $path = $request->file('cover_image')->store('covers', $mediaDisk);
+            $data['cover_image'] = $path;
         } else {
-            $data['cover_image'] = '/images/covers/default.png'; // Default image path if none uploaded
+            $data['cover_image'] = null;
         }
 
 
@@ -124,13 +119,10 @@ class BookController extends Controller
 
         // Handle File Upload (Update/Replace)
         if ($request->hasFile('cover_image')) {
-            // Optional: Delete old image if it exists and is not the default
-            if ($book->cover_image && $book->cover_image != '/images/covers/default.png' && Storage::exists(str_replace('/storage/', 'public/', $book->cover_image))) {
-                Storage::delete(str_replace('/storage/', 'public/', $book->cover_image));
-            }
-
-            $path = $request->file('cover_image')->store('public/covers');
-            $data['cover_image'] = Storage::url($path);
+            $mediaDisk = config('filesystems.media_disk', 'public');
+            $this->deleteCoverFile($book->cover_image);
+            $path = $request->file('cover_image')->store('covers', $mediaDisk);
+            $data['cover_image'] = $path;
         }
         // If no new image is uploaded, $data['cover_image'] won't be set,
         // so the existing image path in the database remains unchanged.
@@ -145,12 +137,35 @@ class BookController extends Controller
      */
     public function destroy(Book $book): RedirectResponse // Route model binding
     {
-        // Optional: Delete the associated image file before deleting the record
-        if ($book->cover_image && $book->cover_image != '/images/covers/default.png' && Storage::exists(str_replace('/storage/', 'public/', $book->cover_image))) {
-            Storage::delete(str_replace('/storage/', 'public/', $book->cover_image));
+        // Prevent cascade deletion of past customer orders and invoice records
+        if ($book->orderItems()->exists()) {
+            $book->update([
+                'stock' => 0,
+            ]);
+            return redirect()->route('admin.books.index')->with('success', "Book '{$book->title}' has customer sales history; inventory was set to 0 and archived rather than destroying past order records.");
         }
+
+        // Delete the associated image file before deleting the record
+        $this->deleteCoverFile($book->cover_image);
 
         $book->delete();
         return redirect()->route('admin.books.index')->with('success', 'Book deleted successfully.');
+    }
+
+    /**
+     * Clean up an existing cover image file from the configured media disk.
+     */
+    protected function deleteCoverFile(?string $coverImage): void
+    {
+        if (!$coverImage || str_starts_with($coverImage, 'images/') || str_starts_with($coverImage, 'http')) {
+            return;
+        }
+
+        $mediaDisk = config('filesystems.media_disk', 'public');
+        $relative = ltrim(str_replace('/storage/', '', $coverImage), '/');
+
+        if (Storage::disk($mediaDisk)->exists($relative)) {
+            Storage::disk($mediaDisk)->delete($relative);
+        }
     }
 }

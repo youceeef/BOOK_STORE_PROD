@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 class BookSeeder extends Seeder
 {
@@ -60,27 +60,20 @@ class BookSeeder extends Seeder
             'Embers and Ashes',
         ];
 
-        $books = [];
-
         foreach ($titles as $index => $title) {
-            $books[] = [
-                'title' => $title,
-                'slug' => Str::slug($title),
-                'category_id' => $categoryIds[$index % count($categoryIds)],
-                'author' => 'Author ' . chr(65 + $index),
-                'description' => "An engaging and captivating edition of {$title}. Explores themes of human nature, destiny, and resilience across historical epochs.",
-                'isbn' => '9780000000' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
-                'cover_image' => $covers[$index % count($covers)],
-                'price' => rand(14, 45) + 0.99,
-                'stock' => rand(3, 25),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
+            Book::updateOrCreate(
+                ['slug' => Str::slug($title)],
+                [
+                    'title' => $title,
+                    'category_id' => $categoryIds[$index % count($categoryIds)],
+                    'author' => 'Author ' . chr(65 + $index),
+                    'description' => "An engaging and captivating edition of {$title}. Explores themes of human nature, destiny, and resilience across historical epochs.",
+                    'isbn' => '9780000000' . str_pad($index + 1, 4, '0', STR_PAD_LEFT),
+                    'cover_image' => $covers[$index % count($covers)],
+                    'price' => rand(14, 45) + 0.99,
+                    'stock' => rand(3, 25),
+                ]
+            );
         }
-
-        Schema::disableForeignKeyConstraints();
-        DB::table('books')->truncate();
-        Schema::enableForeignKeyConstraints();
-        DB::table('books')->insert($books);
     }
 }

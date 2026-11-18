@@ -44,6 +44,9 @@ class CategoryController extends Controller
             'slug' => Str::slug($request->name),
         ]);
 
+        cache()->forget('active_categories');
+        cache()->forget('active_categories_all');
+
         return redirect()->route('admin.categories.index')->with('success', 'Category created successfully.');
     }
 
@@ -74,6 +77,9 @@ class CategoryController extends Controller
             'slug' => Str::slug($request->name),
         ]);
 
+        cache()->forget('active_categories');
+        cache()->forget('active_categories_all');
+
         return redirect()->route('admin.categories.index')->with('success', 'Category updated successfully.');
     }
 
@@ -89,6 +95,9 @@ class CategoryController extends Controller
         }
 
         $category->delete();
+
+        cache()->forget('active_categories');
+        cache()->forget('active_categories_all');
 
         return redirect()->route('admin.categories.index')->with('success', 'Category deleted successfully.');
     }

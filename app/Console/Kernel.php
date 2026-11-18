@@ -12,7 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        $schedule->call(function () {
+            \App\Services\StockReservationService::pruneExpired();
+        })->everyFiveMinutes()->name('prune-expired-stock-reservations');
     }
 
     /**

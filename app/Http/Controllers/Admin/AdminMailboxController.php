@@ -14,6 +14,7 @@ class AdminMailboxController extends Controller
      */
     public function index(): View
     {
+        abort_if(app()->isProduction(), 404);
         $emails = cache()->get('dev_mailbox_log', []);
 
         return view('admin.mailbox.index', compact('emails'));
@@ -24,6 +25,7 @@ class AdminMailboxController extends Controller
      */
     public function clear(): RedirectResponse
     {
+        abort_if(app()->isProduction(), 404);
         cache()->forget('dev_mailbox_log');
 
         return redirect()->route('admin.mailbox.index')->with('success', 'Mailbox activity log cleared.');

@@ -31,10 +31,11 @@
     </script>
 
     <!-- Scripts & Styles -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/admin.js'])
 </head>
 
-<body class="font-sans antialiased text-zinc-900 bg-[#faf9f6] dark:bg-[#0a0a0f] dark:text-zinc-100 min-h-screen flex flex-col">
+<body class="font-sans antialiased text-zinc-900 bg-[#faf9f6] dark:bg-[#0a0a0f] dark:text-zinc-100 min-h-screen flex flex-col"
+    x-data="{ mobileNavOpen: false }">
     <!-- Top Bar (Public Navigation Header) -->
     @include('layouts.navigation')
 
@@ -43,6 +44,101 @@
 
     <!-- Global Spotlight Command Palette (⌘K / Ctrl+K) -->
     <x-command-palette />
+
+    <!-- Mobile Admin Sub-Header / Drawer Trigger -->
+    <div class="md:hidden flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#0e0f15] border-b border-zinc-200 dark:border-zinc-800">
+        <div class="flex items-center space-x-2 rtl:space-x-reverse">
+            <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 font-semibold">Admin</span>
+            <span class="text-zinc-300 dark:text-zinc-700">/</span>
+            <span class="text-xs font-serif font-bold text-zinc-900 dark:text-white">Navigation</span>
+        </div>
+        <button @click="mobileNavOpen = true" aria-label="Open admin navigation drawer"
+            class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+            <span>Menu</span>
+        </button>
+    </div>
+
+    <!-- Mobile Drawer Off-Canvas Backdrop & Panel -->
+    <div x-show="mobileNavOpen"
+        x-cloak
+        style="display: none;"
+        class="relative z-50 md:hidden"
+        role="dialog"
+        aria-modal="true">
+        <div x-show="mobileNavOpen"
+            x-transition:enter="transition-opacity ease-linear duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition-opacity ease-linear duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-black/50"
+            @click="mobileNavOpen = false"></div>
+
+        <div class="fixed inset-0 flex">
+            <div x-show="mobileNavOpen"
+                x-transition:enter="transition ease-in-out duration-200 transform"
+                x-transition:enter-start="-translate-x-full rtl:translate-x-full"
+                x-transition:enter-end="translate-x-0"
+                x-transition:leave="transition ease-in-out duration-200 transform"
+                x-transition:leave-start="translate-x-0"
+                x-transition:leave-end="-translate-x-full rtl:translate-x-full"
+                class="relative mr-16 flex w-full max-w-xs flex-1">
+                <div class="flex w-full flex-col bg-white dark:bg-[#0e0f15] border-r border-zinc-200 dark:border-zinc-800 shadow-xl">
+                    <div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-800">
+                        <div>
+                            <span class="text-[10px] uppercase font-mono tracking-wider text-zinc-400 font-semibold block">Control Center</span>
+                            <h2 class="font-serif text-sm font-bold text-zinc-900 dark:text-white">Store Administration</h2>
+                        </div>
+                        <button @click="mobileNavOpen = false" aria-label="Close navigation drawer"
+                            class="p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <nav class="p-3 space-y-1 flex-1 overflow-y-auto">
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.dashboard') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Overview & Analytics
+                        </a>
+                        <a href="{{ route('admin.books.index') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.books.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Manage Volumes
+                        </a>
+                        <a href="{{ route('admin.categories.index') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.categories.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Genres & Categories
+                        </a>
+                        <a href="{{ route('admin.orders.index') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.orders.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Orders & Invoices
+                        </a>
+                        <a href="{{ route('admin.coupons.index') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.coupons.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Coupons & Discounts
+                        </a>
+                        @unless(app()->isProduction())
+                        <a href="{{ route('admin.mailbox.index') }}"
+                            class="flex items-center px-3 py-2.5 rounded-md text-xs font-medium {{ request()->routeIs('admin.mailbox.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900' : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
+                            Mailbox Inspector
+                        </a>
+                        @endunless
+                    </nav>
+
+                    <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">
+                        <a href="{{ route('home') }}" class="flex items-center px-3 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-900/60">
+                            Back to Storefront
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="flex flex-1">
         <!-- Admin Dedicated Monochromatic Sidebar -->
@@ -99,6 +195,7 @@
                 </a>
 
                 {{-- Mailbox Inspector --}}
+                @unless(app()->isProduction())
                 <a href="{{ route('admin.mailbox.index') }}"
                     class="flex items-center px-3 py-2 rounded-md text-xs font-medium transition {{ request()->routeIs('admin.mailbox.*') ? 'bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-900/60' }}">
                     <svg class="w-4 h-4 mr-2.5 rtl:mr-0 rtl:ml-2.5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,6 +203,7 @@
                     </svg>
                     <span>Mailbox Inspector</span>
                 </a>
+                @endunless
             </nav>
 
             <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">

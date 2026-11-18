@@ -10,11 +10,11 @@
 
 [![Author](https://img.shields.io/badge/Author-Youssef%20Kaabechi-10B981?style=for-the-badge&logo=github&logoColor=white)](https://github.com/youceeef)
 [![CSFTK Tunis](https://img.shields.io/badge/Exam%20Project-CSFTK%20Tunis-1E40AF?style=for-the-badge)](https://csftk.tn)
-[![Laravel](https://img.shields.io/badge/Laravel-10.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
+[![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://php.net)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![Stripe](https://img.shields.io/badge/Stripe-Payments-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com)
-[![Tests](https://img.shields.io/badge/Tests-93%20Passing%20(100%25)-10B981?style=for-the-badge&logo=githubactions&logoColor=white)]()
+[![Tests](https://img.shields.io/badge/Tests-119%20Passing%20(100%25)-10B981?style=for-the-badge&logo=githubactions&logoColor=white)]()
 [![Status](https://img.shields.io/badge/Production-Live%20on%20Railway-success?style=for-the-badge&logo=railway&logoColor=white)](https://bookstores.up.railway.app)
 
 [🌐 Live Production Demo](https://bookstores.up.railway.app) &nbsp;|&nbsp; [📖 Evaluator's Guide](#-evaluators--jury-quick-guide) &nbsp;|&nbsp; [⚡ Feature Matrix](#-comprehensive-feature-matrix) &nbsp;|&nbsp; [📸 Visual Showcase](#-visual-showcase) &nbsp;|&nbsp; [🚀 Local Installation](#-installation--local-development)
@@ -41,11 +41,14 @@
 
 ---
 
-## 🧭 Evaluator's & Jury Quick Guide
+## 🧭 Evaluator's & Local Testing Guide
 
-For examiners, jury members, or evaluators wishing to test the platform on the [Live Production Deployment](https://bookstores.up.railway.app), use the pre-configured credentials below:
+For examiners, jury members, or evaluators testing the platform in local development or sandbox environments, use the pre-configured default credentials below:
 
-### 🔑 Pre-Seeded Evaluation Credentials
+### 🔑 Local & Sandbox Evaluation Credentials
+
+> [!NOTE]
+> The credentials below apply to local development and sandbox environments. Live production deployments configure credentials securely via environment variables (`ADMIN_EMAIL`, `ADMIN_PASSWORD`) and disable shortcut inspectors.
 
 | Role | Email | Password | Access Privileges |
 | :--- | :--- | :--- | :--- |
@@ -151,11 +154,16 @@ For examiners, jury members, or evaluators wishing to test the platform on the [
 - **Visual Order Fulfillment Tracker:** Real-time visual timeline (`Processing` → `Shipped` with carrier and tracking code → `Delivered`).
 
 ### 🛡️ Enterprise Architecture & Security
+- **Payment & Checkout State Machine:** Idempotent checkout charge (`order_charge_{id}`), pending order creation before charge, GET-safe return endpoint `checkout.return` for SCA / 3D-Secure.
 - **Pessimistic Concurrency Locking (`lockForUpdate`):** Database-level transaction locking on inventory stock and promotional coupon limits to eliminate race conditions and double-spending during checkout spikes.
-- **Stripe Elements & Asynchronous Webhooks:** Secure tokenized payment processing with automated server-to-server webhook confirmation.
+- **Stripe HMAC Webhook Signature Verification:** Dedicated middleware validating Stripe signatures and rejecting forged or unsigned requests with 403 in production.
+- **Order Retention & Anonymization:** Account deletion anonymizes customer personal data while preserving immutable order and invoice snapshots; sold books are archived rather than cascade-deleted.
+- **Idempotent Order Cancellation:** Restores stock reservations and coupon capacity inside transactions, with automatic Stripe refund processing.
 - **60-Minute Signed Email Verification:** Strict account hold upon signup, HMAC signed URLs with 60-minute expiration, and an expired-link recovery engine.
 - **Modern Resend HTTPS Mail Transport:** Dispatches transactional emails via HTTPS (port 443), permanently bypassing cloud-provider SMTP port firewall blocks (`25`, `465`, `587`).
-- **Transactional Mailbox Inspector (`/admin/mailbox`):** In-app inspection console capturing all dispatched activation and password reset tokens in real time.
+- **Production Edge Security & Startup:** HTTP Strict Transport Security (HSTS), secure HTTPS-only session cookies, and zero-downtime startup via `deploy/start.sh` (Nginx + PHP-FPM with automated migrations via `AUTORUN_MIGRATIONS=true`).
+- **Media Storage Isolation:** Unified media disk configured via `MEDIA_DISK` (local `public` or S3/cloud) with relative asset paths.
+- **Transactional Mailbox Inspector (`/admin/mailbox`):** In-app inspection console capturing all dispatched activation and password reset tokens in local/sandbox environments (strictly blocked in production).
 
 ### 💼 Back-Office Administrative Suite
 - **Analytics Dashboard:** Revenue totals, sales metrics, gross volume, and stock replenishment alerts.
@@ -187,12 +195,12 @@ BOOK_STORE/
 │   ├── web.php                 # Customer, Shop, Cart, and Admin routes
 │   └── auth.php                # Authentication & Verification routes
 └── tests/
-    └── Feature/                # 93 Feature & Unit tests (100% passing)
+    └── Feature/                # 119 Feature & Unit tests (100% passing)
 ```
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
-| **Backend Framework** | [Laravel 10.x](https://laravel.com) | Industry-standard PHP framework with robust ORM, security, and routing |
+| **Backend Framework** | [Laravel 12.x](https://laravel.com) | Modern enterprise PHP framework with robust ORM, security, and routing |
 | **Language** | [PHP 8.2+](https://php.net) | Modern typed PHP with typed properties, match expressions, and performance |
 | **Frontend Styling** | [Tailwind CSS 3.x](https://tailwindcss.com) | High-performance utility styling without bloated CSS bundles |
 | **Client Scripting** | [Alpine.js 3.x](https://alpinejs.dev) | Declarative, lightweight micro-reactivity without heavy SPA frameworks |
@@ -251,6 +259,15 @@ php artisan serve
 
 Access the local instance at: **`http://127.0.0.1:8000`**
 
+### 🚢 Production Deployment (Railway / Nixpacks)
+
+The repository includes a production startup controller in `deploy/start.sh` executed by `nixpacks.toml` and `Procfile`:
+
+- **Automated Safe Migrations:** Set `AUTORUN_MIGRATIONS=true` in the Railway environment to safely apply migrations (`php artisan migrate --force --no-interaction`) before the web server begins receiving traffic.
+- **Media Disk Configuration:** Set `MEDIA_DISK=public` (for persistent volume storage) or `MEDIA_DISK=s3` with standard AWS credentials.
+- **Production Web Server:** Runs optimized `php-fpm` and `nginx` with automatic cache warm-up (`config:cache`, `route:cache`, `view:cache`).
+- **Webhooks:** Point your Stripe webhook endpoint to `https://your-domain.com/stripe/webhook` and define `STRIPE_WEBHOOK_SECRET` in environment variables.
+
 ---
 
 ## 🧪 Automated Testing & Code Quality
@@ -263,31 +280,33 @@ php artisan test
 ```
 
 ```
-   PASS  Tests\Feature\AdminBookTest
-   PASS  Tests\Feature\AdminCategoryTest
-   PASS  Tests\Feature\AdminCouponTest
+   PASS  Tests\Unit\ExampleTest
    PASS  Tests\Feature\AdminDashboardTest
    PASS  Tests\Feature\AdminMailboxTest
-   PASS  Tests\Feature\AdminOrderTest
    PASS  Tests\Feature\Auth\AuthenticationTest
    PASS  Tests\Feature\Auth\EmailVerificationTest
    PASS  Tests\Feature\Auth\PasswordConfirmationTest
    PASS  Tests\Feature\Auth\PasswordResetTest
    PASS  Tests\Feature\Auth\PasswordUpdateTest
    PASS  Tests\Feature\Auth\RegistrationTest
-   PASS  Tests\Feature\BookCatalogTest
-   PASS  Tests\Feature\CartCheckoutTest
-   PASS  Tests\Feature\CheckoutConcurrencyTest
+   PASS  Tests\Feature\CartInteractionTest
+   PASS  Tests\Feature\CheckoutStateMachineTest
+   PASS  Tests\Feature\CheckoutTest
+   PASS  Tests\Feature\CommandPaletteTest
+   PASS  Tests\Feature\ConcurrencyCheckoutTest
+   PASS  Tests\Feature\InventoryAndCatalogTest
    PASS  Tests\Feature\InvoiceTest
    PASS  Tests\Feature\LocalizationAndThemeTest
+   PASS  Tests\Feature\OrderDataRetentionTest
    PASS  Tests\Feature\OrderFulfillmentTest
    PASS  Tests\Feature\ProfileTest
    PASS  Tests\Feature\ReaderModalTest
    PASS  Tests\Feature\ReviewTest
+   PASS  Tests\Feature\StripeWebhookSignatureTest
    PASS  Tests\Feature\WishlistTest
 
-  Tests:    93 passed (309 assertions)
-  Duration: 6.5s
+  Tests:    119 passed (434 assertions)
+  Duration: 5.2s
 ```
 
 ---

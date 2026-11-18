@@ -43,8 +43,12 @@ class PasswordResetLinkController extends Controller
         }
 
         if ($status == Password::RESET_LINK_SENT) {
-            $demoUrl = cache()->get('latest_password_reset_' . md5(strtolower($request->email)));
-            return back()->with('status', __($status))->with('demo_reset_url', $demoUrl);
+            $response = back()->with('status', __($status));
+            if (!app()->isProduction()) {
+                $demoUrl = cache()->get('latest_password_reset_' . md5(strtolower($request->email)));
+                $response->with('demo_reset_url', $demoUrl);
+            }
+            return $response;
         }
 
         return back()->withInput($request->only('email'))

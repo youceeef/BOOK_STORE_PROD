@@ -70,4 +70,15 @@ class PasswordResetTest extends TestCase
             return true;
         });
     }
+
+    public function test_reset_password_does_not_leak_reset_url_in_production(): void
+    {
+        $this->app['env'] = 'production';
+        $user = User::factory()->create();
+
+        $response = $this->post('/forgot-password', ['email' => $user->email]);
+
+        $response->assertSessionMissing('demo_reset_url');
+        $this->assertNull(cache()->get('latest_password_reset_' . md5(strtolower($user->email))));
+    }
 }
