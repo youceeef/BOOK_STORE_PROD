@@ -50,6 +50,10 @@ return [
             'transport' => 'ses',
         ],
 
+        'resend' => [
+            'transport' => 'resend',
+        ],
+
         'postmark' => [
             'transport' => 'postmark',
             // 'message_stream_id' => null,
@@ -82,6 +86,7 @@ return [
         'failover' => [
             'transport' => 'failover',
             'mailers' => [
+                'resend',
                 'smtp',
                 'log',
             ],
