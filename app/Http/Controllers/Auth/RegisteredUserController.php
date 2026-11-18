@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 
@@ -42,7 +43,15 @@ class RegisteredUserController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        event(new Registered($user));
+        try {
+            event(new Registered($user));
+        } catch (\Throwable $e) {
+            Log::error('Registration mail dispatch failed: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+            session()->flash('mail_error', $e->getMessage());
+        }
 
         Auth::login($user);
 

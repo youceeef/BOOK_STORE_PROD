@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Notifications\CustomVerifyEmail;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -39,5 +40,27 @@ class RegistrationTest extends TestCase
         $this->assertFalse($user->hasVerifiedEmail());
 
         Notification::assertSentTo($user, CustomVerifyEmail::class);
+    }
+
+    public function test_registration_does_not_crash_with_500_when_mail_fails(): void
+    {
+        Event::listen(\Illuminate\Auth\Events\Registered::class, function () {
+            throw new \RuntimeException('SMTP Connection refused');
+        });
+
+        $response = $this->post('/register', [
+            'name' => 'Resilient User',
+            'email' => 'resilient@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('verification.notice'));
+        $response->assertSessionHas('mail_error');
+
+        $user = User::where('email', 'resilient@example.com')->first();
+        $this->assertNotNull($user);
+        $this->assertFalse($user->hasVerifiedEmail());
     }
 }

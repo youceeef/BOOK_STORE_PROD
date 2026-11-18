@@ -15,6 +15,26 @@
         </div>
     </div>
 
+    @if (session('mail_error'))
+        <div class="mb-5 p-3.5 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-700/70 text-xs text-amber-900 dark:text-amber-200">
+            <div class="font-semibold mb-1 flex items-center gap-1.5 text-amber-950 dark:text-amber-100">
+                <svg class="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                <span>SMTP Mail Server Notice</span>
+            </div>
+            <p class="leading-relaxed text-[11px] text-amber-800 dark:text-amber-300">
+                Your account is saved, but the mail server returned an issue when sending to your inbox:
+            </p>
+            <div class="mt-1.5 p-2 rounded bg-amber-100/70 dark:bg-amber-900/40 font-mono text-[10px] text-amber-950 dark:text-amber-200 break-all border border-amber-200 dark:border-amber-800">
+                {{ session('mail_error') }}
+            </div>
+            <p class="leading-relaxed text-[11px] text-amber-700 dark:text-amber-400 mt-2">
+                You can activate your account immediately using the Testing Sandbox Shortcut below, or adjust your SMTP credentials in Railway and click <strong>Resend Activation Link</strong>.
+            </p>
+        </div>
+    @endif
+
     @if (session('status') == 'verification-link-sent')
         <div class="mb-5 p-3 rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-800 dark:text-emerald-300 flex items-center space-x-2 rtl:space-x-reverse">
             <svg class="w-4 h-4 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class EmailVerificationNotificationController extends Controller
 {
@@ -30,8 +31,12 @@ class EmailVerificationNotificationController extends Controller
             return redirect()->intended(RouteServiceProvider::HOME);
         }
 
-        $user->sendEmailVerificationNotification();
-
-        return back()->with('status', 'verification-link-sent')->with('resent_email', $user->email);
+        try {
+            $user->sendEmailVerificationNotification();
+            return back()->with('status', 'verification-link-sent')->with('resent_email', $user->email);
+        } catch (\Throwable $e) {
+            Log::error('Resend verification mail dispatch failed: ' . $e->getMessage());
+            return back()->with('mail_error', $e->getMessage())->with('resent_email', $user->email);
+        }
     }
 }
